@@ -1,7 +1,9 @@
 import { Chess, type Square, type Piece } from "chess.js";
 import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 const chess = new Chess();
+const socket = io("http://localhost:8080");
 
 export const ChessBoard = () => {
 	const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
@@ -13,6 +15,26 @@ export const ChessBoard = () => {
 	const [canAttack, setCanAttack] = useState<Square[] | null>(null);
 	const [playerTurn, setPlayerTurn] = useState<"w" | "b">("w");
 	const [roomId, setRoomId] = useState(null);
+
+	socket.emit("start_game");
+	useEffect(() => {
+
+		socket.on("game_started", ({ roomId, color, board }) => {
+			setRoomId(roomId);
+			setPlayerTurn(color);
+			setBoard(board);
+			console.log(`Game started as ${color}`);
+		});
+
+		socket.on("move", ({ from, to, board: newBoard }) => {
+			setBoard(newBoard);
+			setSelectedPiece(null);
+			setValidMove([]);
+		});
+
+		console.log("sending ws request ");
+		
+	}, []);
 
 	useEffect(() => {
 		const attackedSquare: Square[] = [];
@@ -51,7 +73,9 @@ export const ChessBoard = () => {
 
 			const moveResult = chess.move({ from: selectedPiece, to: square });
 			if (moveResult) {
-				setBoard(chess.board());
+				socket.emit("move", { roomId, from: selectedPiece, to: square });
+				chess.undo();
+				// setBoard(chess.board());
 			}
 
 			setSelectedPiece(null);
