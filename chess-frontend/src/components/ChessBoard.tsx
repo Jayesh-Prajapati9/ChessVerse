@@ -1,11 +1,10 @@
 import { Chess, type Square, type Piece } from "chess.js";
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
 
 const chess = new Chess();
-const socket = io("http://localhost:8080");
 
 export const ChessBoard = () => {
+	const socketRef = useRef<WebSocket | null>(null);
 	const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
 	const [validMove, setValidMove] = useState<Square[] | null>([]);
 	const [board, setBoard] = useState(chess.board());
@@ -14,35 +13,41 @@ export const ChessBoard = () => {
 	const [kingSquare, setKingSquare] = useState<Square[] | null>(null);
 	const [canAttack, setCanAttack] = useState<Square[] | null>(null);
 	const [playerTurn, setPlayerTurn] = useState<"w" | "b">("w");
-	const [roomId, setRoomId] = useState(null);
+	const [roomId, setRoomId] = useState<string | null>(null);
 
-	socket.emit("start_game");
 	useEffect(() => {
+		socketRef.current = new WebSocket("ws://localhost:8080");
 
-		socket.on("game_started", ({ roomId, color, board }) => {
-			setRoomId(roomId);
-			setPlayerTurn(color);
-			setBoard(board);
-			console.log(`Game started as ${color}`);
-		});
+		socketRef.current.onopen = () => {
+			console.log("🟢 Connected to WS server");
+			socketRef.current?.send(JSON.stringify({ type: "start_game" }));
+		};
 
-		socket.on("move", ({ from, to, board: newBoard }) => {
-			setBoard(newBoard);
-			setSelectedPiece(null);
-			setValidMove([]);
-		});
+		socketRef.current.onmessage = (event) => {
+			const msg = JSON.parse(event.data);
 
-		console.log("sending ws request ");
-		
+			if (msg.type === "game_started") {
+				setRoomId(msg.roomId);
+				setPlayerTurn(msg.color);
+				setBoard(chess.board());
+				console.log(`Game started as ${msg.color}`);
+			}
+
+			if (msg.type === "move") {
+				setBoard(msg.board);
+				setSelectedPiece(null);
+				setValidMove([]);
+			}
+		};
+
+		return () => {
+			socketRef.current?.close();
+		};
 	}, []);
 
 	useEffect(() => {
 		const attackedSquare: Square[] = [];
-
-		validMove?.map((x) => {
-			chess.get(x) ? attackedSquare.push(x) : null;
-		});
-
+		validMove?.map((x) => chess.get(x) && attackedSquare.push(x));
 		setCanAttack(attackedSquare);
 	}, [validMove, chess]);
 
@@ -63,19 +68,25 @@ export const ChessBoard = () => {
 		if (selectedPiece) {
 			// to get the piece which is already present means the one of the player is attacking the other's piece so to get the present piece
 			const capture = chess.get(square);
-			if (capture) {
-				if (capture?.color === "b" && validMove?.includes(square)) {
-					setWhiteCaptured([...(whiteCaptured ?? []), capture]);
-				} else if (capture?.color === "w" && validMove?.includes(square)) {
-					setBlackCaptured([...(blackCaptured ?? []), capture]);
-				}
+			if (capture && validMove?.includes(square)) {
+				capture.color === "b"
+					? setWhiteCaptured([...(whiteCaptured ?? []), capture])
+					: setBlackCaptured([...(blackCaptured ?? []), capture]);
 			}
 
 			const moveResult = chess.move({ from: selectedPiece, to: square });
+			console.log("Move init");
+
 			if (moveResult) {
-				socket.emit("move", { roomId, from: selectedPiece, to: square });
+				socketRef.current?.send(
+					JSON.stringify({
+						type: "move",
+						roomId,
+						from: selectedPiece,
+						to: square,
+					})
+				);
 				chess.undo();
-				// setBoard(chess.board());
 			}
 
 			setSelectedPiece(null);
@@ -93,19 +104,14 @@ export const ChessBoard = () => {
 				: setKingSquare(null);
 		} else {
 			const moves = chess.moves({ square, verbose: true });
-
 			if (moves.length > 0) {
 				setSelectedPiece(square);
 				setValidMove(moves.map((m) => m.to));
-			} else {
-				if (chess.turn() !== chess.get(square)?.color) {
-					console.log("Not your Turn");
-				}
+			} else if (chess.turn() !== chess.get(square)?.color) {
+				console.log("Not your Turn");
 			}
 
 			// Check player moves his king or block the check so set the king square to null
-			console.log(chess.inCheck());
-
 			chess.inCheck() ? null : setKingSquare(null);
 		}
 	};
@@ -121,28 +127,24 @@ export const ChessBoard = () => {
 									playerTurn === "w" ? rowIndex : 7 - rowIndex;
 								const actualColIndex =
 									playerTurn === "w" ? colIndex : 7 - colIndex;
-
-								// For coloring the box alternating box will be white and black
-								const isLight = (actualRowIndex + actualColIndex) % 2 === 0;
-								// To get the box value like a1,e4 etc..
 								const selectedSquare = getSquare(
 									actualColIndex,
 									actualRowIndex
 								);
-								// to show the border over selected peices
+								// For coloring the box alternating box will be white and black
+								const isLight = (actualRowIndex + actualColIndex) % 2 === 0;
+								// To get the box value like a1,e4 etc..
 								const isSelected = selectedSquare === selectedPiece;
+								// to show the border over selected peices
 								const isValid = validMove?.includes(selectedSquare);
 								// set The canAttack array
 								const isUnderAttack = canAttack?.includes(selectedSquare);
-
 								const pieceHighlight =
-									isSelected &&
-									kingSquare?.[0] === getSquare(actualColIndex, actualRowIndex)
+									isSelected && kingSquare?.[0] === selectedSquare
 										? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1),inset_0_0_0_3px_rgba(239,68,68,1)]"
 										: isSelected
 											? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1)]"
-											: kingSquare?.[0] ===
-												  getSquare(actualColIndex, actualRowIndex)
+											: kingSquare?.[0] === selectedSquare
 												? "shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
 												: null;
 
@@ -151,8 +153,8 @@ export const ChessBoard = () => {
 										key={actualRowIndex + actualColIndex}
 										onClick={() => handleMove(selectedSquare)}
 										className={`relative flex w-full h-full items-center justify-center cursor-pointer 
-									${isLight ? "bg-white" : "bg-orange-300"} 
-									${pieceHighlight}`}
+								${isLight ? "bg-white" : "bg-orange-300"} 
+								${pieceHighlight}`}
 									>
 										<span className="text-5xl">
 											{obj ? getPieces(obj.type, obj.color) : null}
@@ -160,12 +162,7 @@ export const ChessBoard = () => {
 										{isValid && (
 											<div
 												className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-      									${
-													isUnderAttack
-														? "w-full h-full shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
-														: "w-3 h-3 rounded-full bg-green-500 opacity-80"
-												}
-    `}
+									${isUnderAttack ? "w-full h-full shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]" : "w-3 h-3 rounded-full bg-green-500 opacity-80"}`}
 											/>
 										)}
 									</div>
@@ -175,18 +172,17 @@ export const ChessBoard = () => {
 				)}
 			</div>
 			<div>
-				Black Capture :{" "}
+				Black Capture:{" "}
 				{blackCaptured
 					? blackCaptured.map((x) => getPieces(x.type, x.color))
 					: "---"}
 			</div>
 			<div>
-				White Capture :{" "}
+				White Capture:{" "}
 				{whiteCaptured
 					? whiteCaptured.map((x) => getPieces(x.type, x.color))
 					: "---"}
 			</div>
-			{/* <p>{JSON.stringify(board)}</p> */}
 		</div>
 	);
 };
