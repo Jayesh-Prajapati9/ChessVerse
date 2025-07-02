@@ -1,11 +1,10 @@
 import { Chess, type Square, type Piece } from "chess.js";
 import { useEffect, useRef, useState } from "react";
 
-// const chess = new Chess();
-
 export const ChessBoard = () => {
 	const socketRef = useRef<WebSocket | null>(null);
 	const chessRef = useRef<Chess>(new Chess());
+	// Using the useRef hook becoz every time the chessboard re render it will create a new ws connection therefore to eliminate this useref is better option.
 
 	const [selectedPiece, setSelectedPiece] = useState<Square | null>(null);
 	const [validMove, setValidMove] = useState<Square[] | null>([]);
@@ -14,15 +13,16 @@ export const ChessBoard = () => {
 	const [whiteCaptured, setWhiteCaptured] = useState<Piece[] | null>(null);
 	const [kingSquare, setKingSquare] = useState<Square[] | null>(null);
 	const [canAttack, setCanAttack] = useState<Square[] | null>(null);
-	const [underCheck, setUnderCheck] = useState<boolean>(false);
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
 
 	useEffect(() => {
+		// When the website mount then a new websocket connection is created
 		socketRef.current = new WebSocket("ws://localhost:8080");
 		socketRef.current.onopen = () => {
 			console.log("🟢 Connected to WS server");
 		};
+
 		socketRef.current.onmessage = (event) => {
 			const msg = JSON.parse(event.data);
 
@@ -37,9 +37,22 @@ export const ChessBoard = () => {
 			if (msg.type === "move") {
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
-				setUnderCheck(msg.isCheck);
 				setSelectedPiece(null);
 				setValidMove([]);
+
+				// After the move check whether any player is under the check ? If Yes then indicate the that player
+
+				chessRef.current.turn() === "w"
+					? chessRef.current.inCheck()
+						? setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "w" })
+							)
+						: setKingSquare(null)
+					: chessRef.current.inCheck()
+						? setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "b" })
+							)
+						: setKingSquare(null);
 			}
 		};
 
@@ -138,13 +151,23 @@ export const ChessBoard = () => {
 	};
 
 	const handleMove = (square: Square) => {
+		// If user want to select other piece so first he will select the selected piece to reselect the other piece
+
 		if (square === selectedPiece) {
 			setSelectedPiece(null);
 			setValidMove(null);
 			return;
 		}
 
+		// First of all the selected piece will be empty when the user click on piece the first selection is done by user which should be of selecting pieces only means you cannnot select random square box so if you have selected the random box then it will show error.
+
+		// Then if the user had selected piece then the board will re render according to the moves he can play. This time the arrgument be the box user wants to places the piece.
+
+		// Now here to play a single move user have to click 2 times first to select the piece and then to select the box. First time the selectedPiece will be empty so will update that and for the second time if it is valid square we will update the board and empty the selectedPiece as well as validMoves state variable.
+
 		if (selectedPiece) {
+			// to get the piece which is already present means the one of the player is attacking the other's piece so to get the present piece
+
 			const piece = chessRef.current.get(selectedPiece);
 			if (!piece) return;
 
@@ -168,6 +191,7 @@ export const ChessBoard = () => {
 				from: selectedPiece,
 				to: square,
 			});
+
 			if (moveResult) {
 				socketRef.current?.send(
 					JSON.stringify({
@@ -181,28 +205,6 @@ export const ChessBoard = () => {
 
 			setSelectedPiece(null);
 			setValidMove([]);
-
-			console.log(chessRef.current.turn(), "Is in Check ", chessRef.current.inCheck());
-
-			// chessRef.current.inCheck()
-			// 	? setKingSquare(
-			// 			chessRef.current.findPiece({
-			// 				type: "k",
-			// 				color: chessRef.current.turn(),
-			// 			})
-			// 		)
-			// 	: setKingSquare(null);
-
-			console.log("Under Check ",underCheck);
-			
-			underCheck
-				? setKingSquare(
-						chessRef.current.findPiece({
-							type: "k",
-							color: playerColor === "b" ? "w" : "b",
-						})
-					)
-				: setKingSquare(null);
 		} else {
 			const piece = chessRef.current.get(square);
 			if (!piece || piece.color !== playerColor) return;

@@ -106,7 +106,6 @@ wss.on("connection", (ws) => {
 							fen: game.chess.fen(),
 							game_over: game.chess.isGameOver(),
 							turn: game.chess.turn(),
-							isCheck:game.chess.isCheck(),
 						})
 					);
 				}
