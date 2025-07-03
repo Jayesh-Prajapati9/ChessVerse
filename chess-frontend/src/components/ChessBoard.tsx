@@ -1,6 +1,5 @@
 import { Chess, type Square, type Piece } from "chess.js";
 import { useEffect, useRef, useState } from "react";
-import { WebSocket } from "ws";
 export const ChessBoard = () => {
 	const socketRef = useRef<WebSocket | null>(null);
 	const chessRef = useRef<Chess>(new Chess());
@@ -14,10 +13,30 @@ export const ChessBoard = () => {
 	const [kingSquare, setKingSquare] = useState<Square[] | null>(null);
 	const [canAttack, setCanAttack] = useState<Square[] | null>(null);
 	const [roomId, setRoomId] = useState<string | null>(null);
-	// Here this playerColor is just used once every time new game is started to show the board acc to the color
+	const [gameStarted, setGameStarted] = useState<boolean>(false);
 	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
+	// Here this playerColor is just used once every time new game is started to show the board acc to the color
+	const [isCheckMate, setIsCheckMate] = useState<boolean>(false);
+	const [gameResult, setGameResult] = useState<{
+		winner: string;
+		reason: string;
+	} | null>(null);
 
 	useEffect(() => {
+		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed 
+		initWebSocketConnection();
+		return () => {
+			socketRef.current?.close();
+		};
+	}, []);
+
+	useEffect(() => {
+		const attackedSquare: Square[] = [];
+		validMove?.map((x) => chessRef.current.get(x) && attackedSquare.push(x));
+		setCanAttack(attackedSquare);
+	}, [validMove, chessRef.current]);
+
+	const initWebSocketConnection = () => {
 		// When the website mount then a new websocket connection is created
 		socketRef.current = new WebSocket("ws://localhost:8000");
 		socketRef.current.onopen = () => {
@@ -30,6 +49,7 @@ export const ChessBoard = () => {
 			if (msg.type === "game_started") {
 				setRoomId(msg.roomId);
 				setPlayerColor(msg.color);
+				setGameStarted(true);
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
 				console.log(`Game started as ${msg.color}`);
@@ -55,27 +75,42 @@ export const ChessBoard = () => {
 							)
 						: setKingSquare(null);
 			}
-		};
 
-		return () => {
-			socketRef.current?.close();
+			if (msg.type === "game_over") {
+				setIsCheckMate(true);
+				setGameResult({ winner: msg.winner, reason: msg.reason });
+				setGameStarted(false);
+				socketRef.current?.close();
+				// Clear All the states
+			}
 		};
-	}, []);
+	};
 
-	useEffect(() => {
-		const attackedSquare: Square[] = [];
-		validMove?.map((x) => chessRef.current.get(x) && attackedSquare.push(x));
-		setCanAttack(attackedSquare);
-	}, [validMove, chessRef.current]);
+	const handleStartNewGame = () => {
+		// After the first game is completed if the user want to start the new game
+		initWebSocketConnection();
+		setSelectedPiece(null);
+		setValidMove([]);
+		setIsCheckMate(false);
+		setGameResult(null);
+		setWhiteCaptured([]);
+		setBlackCaptured([]);
+		setKingSquare(null);
+		setCanAttack([]);
+		setBoard(new Chess().board());
+	};
 
 	const handleStartGame = () => {
 		if (!socketRef.current) return;
-		console.log("GAME STARTED");
-
 		socketRef.current?.send(JSON.stringify({ type: "start_game" }));
 	};
 
 	const handleMove = (square: Square) => {
+		//Check whether the the game is started or not
+		if (!gameStarted) return;
+		// Check whether the game is over or not
+		if (isCheckMate) return;
+
 		// If user want to select other piece so first he will select the selected piece to reselect the other piece
 
 		if (square === selectedPiece) {
@@ -151,6 +186,23 @@ export const ChessBoard = () => {
 
 	return (
 		<div>
+			{isCheckMate && (
+				<div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+					<p className="text-lg font-semibold">
+						♔ Game Over —{" "}
+						{gameResult?.reason === "checkmate"
+							? "Checkmate!"
+							: gameResult?.reason}
+					</p>
+					{gameResult?.winner && <p>🏆 Winner: {gameResult.winner}</p>}
+					<button
+						onClick={handleStartNewGame}
+						className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+					>
+						Play Again
+					</button>
+				</div>
+			)}
 			<div className="w-[480px] h-[480px] grid grid-cols-8 grid-rows-8 border-2 border-black select-none">
 				{(playerColor === "w" ? board : [...board].reverse()).map(
 					(row, rowIndex) =>
@@ -206,14 +258,14 @@ export const ChessBoard = () => {
 			</div>
 
 			{playerColor === "w" ? (
-				<div>
+				<div className="text-indigo-300">
 					White Capture:{" "}
 					{whiteCaptured
 						? whiteCaptured.map((x) => getPieces(x.type, x.color))
 						: "---"}
 				</div>
 			) : (
-				<div>
+				<div className="text-indigo-300">
 					Black Capture:{" "}
 					{blackCaptured
 						? blackCaptured.map((x) => getPieces(x.type, x.color))
@@ -221,7 +273,10 @@ export const ChessBoard = () => {
 				</div>
 			)}
 
-			<button className="border-2 rounded-2xl p-1 " onClick={handleStartGame}>
+			<button
+				className="border-2 rounded-2xl p-1 text-indigo-300 "
+				onClick={handleStartGame}
+			>
 				Start The Game
 			</button>
 		</div>
