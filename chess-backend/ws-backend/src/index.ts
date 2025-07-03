@@ -1,26 +1,9 @@
-import express from "express";
-import http from "http";
-import { gameRoutes } from "./routes/gameRoutes";
-import { Chess, Color, PieceSymbol, Square } from "chess.js";
-import cors from "cors";
-const app = express();
-const port = 8080;
 import { WebSocket, WebSocketServer } from "ws";
+import { Chess, Color, PieceSymbol, Square } from "chess.js";
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const WSS_PORT = 8000;
+const wss = new WebSocketServer({ port: WSS_PORT });
 const chess = new Chess();
-
-app.use(
-	cors({
-		origin: "http://localhost:5173", // Replace with your frontend URL
-		credentials: true,
-	})
-);
-
-app.use(express.json());
-
-app.use("/game", gameRoutes);
 
 type GameClient = {
 	socket: WebSocket;
@@ -32,10 +15,6 @@ const games = new Map<
 >();
 
 let waitingPlayer: GameClient | null = null; // single waiting player
-
-const createRoomId = () => {
-	return Math.floor(Math.random() * 10000).toString();
-};
 
 wss.on("connection", (ws) => {
 	const clientId = crypto.randomUUID();
@@ -72,7 +51,6 @@ wss.on("connection", (ws) => {
 						color: "b",
 						board: chess.board(),
 						fen: chess.fen(),
-						
 					})
 				);
 				console.log(`GAME STARTED BETWEEN ${clientId} vs ${opponent.id}`);
@@ -121,6 +99,4 @@ wss.on("connection", (ws) => {
 	});
 });
 
-server.listen(port, () => {
-	console.log(`✅ Server (with Socket.IO) is listening on port ${port}`);
-});
+console.log(`WebSocket Server is listening on port ${WSS_PORT}`);

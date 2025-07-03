@@ -16,10 +16,10 @@
   "dependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/ws": "^8.18.1",
-    "chess.js": "^1.4.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "ws": "^8.18.3"
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.25.71"
   }
 }
