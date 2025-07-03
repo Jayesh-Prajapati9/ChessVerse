@@ -1,7 +1,7 @@
 import express from "express";
-import http from "http";
-import { gameRoutes } from "./routes/gameRoutes";
 import cors from "cors";
+import { userRoutes } from "./routes/userRoutes";
+import { gameRoutes } from "./routes/gameRoutes";
 const app = express();
 
 const PORT = 8080;
@@ -15,7 +15,8 @@ app.use(
 
 app.use(express.json());
 
-app.use("/game", gameRoutes);
+app.use('/api/v1/user',userRoutes)
+app.use('/api/v1/game',gameRoutes)
 
 app.listen(PORT, () => {
 	console.log(`Http Backend listening on port ${PORT}` );
