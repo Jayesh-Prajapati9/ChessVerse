@@ -9,6 +9,16 @@ type GameClient = {
 	socket: WebSocket;
 	id: string;
 };
+
+const getGameOverReason = (chess: Chess) => {
+	if (chess.isCheckmate()) return "checkmate";
+	if (chess.isDraw()) return "draw";
+	if (chess.isStalemate()) return "stalemate";
+	if (chess.isThreefoldRepetition()) return "threefold";
+	if (chess.isInsufficientMaterial()) return "insufficient";
+	return "unknown";
+};
+
 const games = new Map<
 	string,
 	{ chess: Chess; players: [WebSocket, WebSocket] }
@@ -61,7 +71,7 @@ wss.on("connection", (ws) => {
 		}
 
 		if (msg.type === "move") {
-			console.log("Move Init");
+			console.log(`Move from${msg.from} to ${msg.to}`);
 
 			// Broadcast to everyone for now (or implement room logic)
 			const { roomId, from, to } = msg;
@@ -70,6 +80,29 @@ wss.on("connection", (ws) => {
 			if (!game) return;
 
 			const move = game.chess.move({ from: from, to: to });
+
+			if (game.chess.isGameOver()) {
+				console.log("Game Over");
+				const reason = getGameOverReason(game.chess);
+				wss.clients.forEach((clients) => {
+					if (clients.readyState === ws.OPEN) {
+						clients.send(
+							JSON.stringify({
+								type: "game_over",
+								reason: reason,
+								fen: game.chess.fen(),
+								winner:
+									reason === "checkmate"
+										? game.chess.turn() === "w"
+											? "black"
+											: "white"
+										: null,
+							})
+						);
+					}
+					clients.close(1000, "Game Over");
+				});
+			}
 
 			if (!move) return;
 
@@ -93,9 +126,7 @@ wss.on("connection", (ws) => {
 
 	ws.on("close", () => {
 		console.log(`❌ Client disconnected: ${clientId}`);
-		if (waitingPlayer?.id === clientId) {
-			waitingPlayer = null;
-		}
+		waitingPlayer = null;
 	});
 });
 
