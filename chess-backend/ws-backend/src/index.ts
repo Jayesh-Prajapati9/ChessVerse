@@ -3,7 +3,6 @@ import { Chess, Color, PieceSymbol, Square } from "chess.js";
 
 const WSS_PORT = 8000;
 const wss = new WebSocketServer({ port: WSS_PORT });
-const chess = new Chess();
 
 type GameClient = {
 	socket: WebSocket;
@@ -27,6 +26,7 @@ const games = new Map<
 let waitingPlayer: GameClient | null = null; // single waiting player
 
 wss.on("connection", (ws) => {
+	const chess = new Chess();
 	const clientId = crypto.randomUUID();
 	console.log("🔌 New client connected:", clientId);
 
@@ -99,9 +99,11 @@ wss.on("connection", (ws) => {
 										: null,
 							})
 						);
+						games.delete(roomId);
 					}
 					clients.close(1000, "Game Over");
 				});
+				console.log(games);
 			}
 
 			if (!move) return;
