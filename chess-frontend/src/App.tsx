@@ -6,7 +6,7 @@ function App() {
 
   return (
     <>
-      <div className="flex justify-center items-center h-screen bg-white">
+      <div className="flex justify-center items-center h-screen bg-black">
       <ChessBoard />
     </div>
     </>

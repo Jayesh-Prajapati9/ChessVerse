@@ -66,7 +66,7 @@ wss.on("connection", (ws) => {
 				console.log(`GAME STARTED BETWEEN ${clientId} vs ${opponent.id}`);
 			} else {
 				waitingPlayer = { socket: ws, id: clientId };
-				console.log(`🕒 ${clientId} is waiting for an opponent`);
+				console.log(`${clientId} is waiting for an opponent`);
 			}
 		}
 
@@ -117,7 +117,6 @@ wss.on("connection", (ws) => {
 							to: msg.to,
 							board: game.chess.board(),
 							fen: game.chess.fen(),
-							game_over: game.chess.isGameOver(),
 							turn: game.chess.turn(),
 						})
 					);
@@ -127,7 +126,7 @@ wss.on("connection", (ws) => {
 	});
 
 	ws.on("close", () => {
-		console.log(`❌ Client disconnected: ${clientId}`);
+		console.log(`Client disconnected: ${clientId}`);
 		waitingPlayer = null;
 	});
 });
