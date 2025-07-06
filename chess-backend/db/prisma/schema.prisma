@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id Int @id @map("_id")
+  username String
+  password String
+  email String @unique
+  avatar_Url String?
+  joined_Date DateTime
+  bio String
+  gamesAsUser1 game[] @relation("User1Games")
+  gamesAsUser2 game[] @relation("User2Games")
+}
+
+model game {
+  id  Int @id @map("_id")
+  played_At DateTime
+  blackmoves String[]
+  whitemoves String[]
+  winnerId Int
+  
+  user1 Int
+  user2 Int 
+  
+  userAsUser1 user @relation("User1Games", fields: [user1], references: [id])
+  userAsUser2 user @relation("User2Games", fields: [user2], references: [id])
+  
+}
