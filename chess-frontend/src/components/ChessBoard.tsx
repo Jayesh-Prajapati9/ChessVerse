@@ -23,7 +23,7 @@ export const ChessBoard = () => {
 	} | null>(null);
 
 	useEffect(() => {
-		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed 
+		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
 		initWebSocketConnection();
 		return () => {
 			socketRef.current?.close();
@@ -38,7 +38,7 @@ export const ChessBoard = () => {
 
 	const initWebSocketConnection = () => {
 		// When the website mount then a new websocket connection is created
-		socketRef.current = new WebSocket("ws://localhost:8000");
+		socketRef.current = new WebSocket("ws://localhost:8000/blizt");
 		socketRef.current.onopen = () => {
 			console.log("🟢 Connected to WS server");
 		};
@@ -80,6 +80,11 @@ export const ChessBoard = () => {
 				setIsCheckMate(true);
 				setGameResult({ winner: msg.winner, reason: msg.reason });
 				setGameStarted(false);
+				chessRef.current.load(msg.fen);
+				setBoard(chessRef.current.board());
+				setSelectedPiece(null);
+				setValidMove([]);
+
 				socketRef.current?.close();
 				// Clear All the states
 			}
@@ -89,8 +94,6 @@ export const ChessBoard = () => {
 	const handleStartNewGame = () => {
 		// After the first game is completed if the user want to start the new game
 		initWebSocketConnection();
-		setSelectedPiece(null);
-		setValidMove([]);
 		setIsCheckMate(false);
 		setGameResult(null);
 		setWhiteCaptured([]);
@@ -159,6 +162,7 @@ export const ChessBoard = () => {
 						roomId,
 						from: selectedPiece,
 						to: square,
+						piece:piece
 					})
 				);
 			}
@@ -274,11 +278,12 @@ export const ChessBoard = () => {
 			)}
 
 			<button
-				className="border-2 rounded-2xl p-1 text-indigo-300 "
+				className="border-2 rounded-2xl p-1 text-indigo-300 cursor-pointer "
 				onClick={handleStartGame}
 			>
 				Start The Game
 			</button>
+			{/* <button onClick={}></button> */}
 		</div>
 	);
 };

@@ -1,14 +1,17 @@
 import './App.css'
-import { ChessBoard } from './components/ChessBoard'
-
+// import { ChessBoard } from './components/ChessBoard'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from './pages/LandingPage';
 function App() {
 
 
   return (
     <>
-      <div className="flex justify-center items-center h-screen bg-black">
-      <ChessBoard />
-    </div>
+   <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+       </Routes>
+        </BrowserRouter>
     </>
   )
 }
