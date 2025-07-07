@@ -10,10 +10,13 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: 6.11.1
-        version: 6.11.1(prisma@6.11.1)
+        version: 6.11.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)
       prisma:
         specifier: ^6.11.1
-        version: 6.11.1
+        version: 6.11.1(typescript@5.8.3)
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
 packages:
 
@@ -61,11 +64,17 @@ packages:
       typescript:
         optional: true
 
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
 snapshots:
 
-  '@prisma/client@6.11.1(prisma@6.11.1)':
+  '@prisma/client@6.11.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)':
     optionalDependencies:
-      prisma: 6.11.1
+      prisma: 6.11.1(typescript@5.8.3)
+      typescript: 5.8.3
 
   '@prisma/config@6.11.1':
     dependencies:
@@ -94,7 +103,11 @@ snapshots:
 
   jiti@2.4.2: {}
 
-  prisma@6.11.1:
+  prisma@6.11.1(typescript@5.8.3):
     dependencies:
       '@prisma/config': 6.11.1
       '@prisma/engines': 6.11.1
+    optionalDependencies:
+      typescript: 5.8.3
+
+  typescript@5.8.3: {}

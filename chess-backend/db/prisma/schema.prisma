@@ -15,7 +15,7 @@ datasource db {
 }
 
 model user {
-  id Int @id @map("_id")
+  id String @id @map("_id")
   username String
   password String
   email String @unique
@@ -31,10 +31,10 @@ model game {
   played_At DateTime
   blackmoves String[]
   whitemoves String[]
-  winnerId Int
+  winnerId Int?
   
-  user1 Int
-  user2 Int 
+  user1 String
+  user2 String 
   
   userAsUser1 user @relation("User1Games", fields: [user1], references: [id])
   userAsUser2 user @relation("User2Games", fields: [user2], references: [id])
