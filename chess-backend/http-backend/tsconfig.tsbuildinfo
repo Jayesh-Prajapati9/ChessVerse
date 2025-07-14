@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/controller/gamecontroller.ts","./src/routes/gameroutes.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/controller/gamecontroller.ts","./src/controller/usercontroller.ts","./src/middleware/userauth.ts","./src/routes/gameroutes.ts","./src/routes/userroutes.ts"],"version":"5.8.3"}

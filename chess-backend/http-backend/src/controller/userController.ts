@@ -12,12 +12,12 @@ export const userSignUp = (req: Request, res: Response) => {
 		.update(password)
 		.digest("hex");
 
-	const JWT_SECRET = process.env.JWT_SECRET || "";
+	const JWT_SECRET = process.env.JWT_SECRET || "JSON_WEB_TOKEN";
 
 	// db call
 
 	// @ts-ignore
-	const token = jwt.sign({ userId }, JWT_SECRET);
+	const token = jwt.sign({ email }, JWT_SECRET);
 
 	res.status(200).json({
 		message: "SignUp Successfully",
