@@ -5,10 +5,9 @@ import axios from "axios";
 
 interface SignupProps {
 	isDark: boolean;
-	toggleTheme: () => void;
 }
 
-export const SignUp: React.FC<SignupProps> = ({ isDark, toggleTheme }) => {
+export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 	const [formData, setFormData] = useState({
 		name: "",
 		email: "",

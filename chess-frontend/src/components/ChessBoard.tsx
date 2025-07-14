@@ -15,12 +15,15 @@ export const ChessBoard = () => {
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [gameStarted, setGameStarted] = useState<boolean>(false);
 	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
+	const [whiteTimer, setWhiteTimer] = useState<number>(180);
+	const [blackTimer, setBlackTimer] = useState<number>(180);
 	// Here this playerColor is just used once every time new game is started to show the board acc to the color
 	const [isCheckMate, setIsCheckMate] = useState<boolean>(false);
 	const [gameResult, setGameResult] = useState<{
 		winner: string;
 		reason: string;
 	} | null>(null);
+	const [mode, setMode] = useState<string | null>(null);
 
 	useEffect(() => {
 		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
@@ -38,7 +41,7 @@ export const ChessBoard = () => {
 
 	const initWebSocketConnection = () => {
 		// When the website mount then a new websocket connection is created
-		socketRef.current = new WebSocket("ws://localhost:8000/blizt");
+		socketRef.current = new WebSocket("ws://localhost:8000");
 		socketRef.current.onopen = () => {
 			console.log("🟢 Connected to WS server");
 		};
@@ -47,20 +50,25 @@ export const ChessBoard = () => {
 			const msg = JSON.parse(event.data.toString());
 
 			if (msg.type === "game_started") {
+				console.log("TURN: ", chessRef.current.turn());
+
 				setRoomId(msg.roomId);
 				setPlayerColor(msg.color);
 				setGameStarted(true);
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
 				console.log(`Game started as ${msg.color}`);
+				console.log("TURN 2 : ", chessRef.current.turn());
 			}
 
 			if (msg.type === "move") {
+				console.log("MOVE TURN: ", chessRef.current.turn());
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
 				setSelectedPiece(null);
 				setValidMove([]);
 
+				console.log("MOVE TURN2: ", chessRef.current.turn());
 				// After the move check whether any player is under the check ? If Yes then indicate the that player
 
 				chessRef.current.turn() === "w"
@@ -88,6 +96,11 @@ export const ChessBoard = () => {
 				socketRef.current?.close();
 				// Clear All the states
 			}
+
+			if (msg.type === "timer_update") {
+				setWhiteTimer(msg.white);
+				setBlackTimer(msg.black);
+			}
 		};
 	};
 
@@ -103,9 +116,9 @@ export const ChessBoard = () => {
 		setBoard(new Chess().board());
 	};
 
-	const handleStartGame = () => {
+	const handleStartGame = (mode: string) => {
 		if (!socketRef.current) return;
-		socketRef.current?.send(JSON.stringify({ type: "start_game" }));
+		socketRef.current?.send(JSON.stringify({ type: "start_game", mode: mode }));
 	};
 
 	const handleMove = (square: Square) => {
@@ -162,7 +175,7 @@ export const ChessBoard = () => {
 						roomId,
 						from: selectedPiece,
 						to: square,
-						piece:piece
+						piece: piece,
 					})
 				);
 			}
@@ -263,26 +276,46 @@ export const ChessBoard = () => {
 
 			{playerColor === "w" ? (
 				<div className="text-indigo-300">
-					White Capture:{" "}
+					Pieces Capture:{" "}
 					{whiteCaptured
 						? whiteCaptured.map((x) => getPieces(x.type, x.color))
 						: "---"}
 				</div>
 			) : (
 				<div className="text-indigo-300">
-					Black Capture:{" "}
+					Pieces Capture:{" "}
 					{blackCaptured
 						? blackCaptured.map((x) => getPieces(x.type, x.color))
 						: "---"}
 				</div>
 			)}
+			{mode === "blitz" ? (
+				playerColor === "w" ? (
+					<div>Timer : {whiteTimer} sec</div>
+				) : (
+					<div>Timer : {blackTimer} sec</div>
+				)
+			) : null}
 
 			<button
 				className="border-2 rounded-2xl p-1 text-indigo-300 cursor-pointer "
-				onClick={handleStartGame}
+				onClick={() => {
+					handleStartGame("normal");
+					setMode("normal");
+				}}
 			>
-				Start The Game
+				Start Normal Game
 			</button>
+			<button
+				className="border-2 rounded-2xl p-1 text-indigo-300 cursor-pointer "
+				onClick={() => {
+					handleStartGame("blitz");
+					setMode("blitz");
+				}}
+			>
+				Start Blitz Game
+			</button>
+			{/* <div>TURN {chessRef.current.turn()}</div> */}
 			{/* <button onClick={}></button> */}
 		</div>
 	);
