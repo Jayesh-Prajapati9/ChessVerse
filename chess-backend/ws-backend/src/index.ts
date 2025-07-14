@@ -11,7 +11,7 @@ wss.on("connection", (ws, request) => {
 		const msg = JSON.parse(data.toString());
 
 		if (msg.type === "start_game") {
-			gamemanager.startGame(ws);
+			gamemanager.startGame(ws,msg.mode);
 		}
 
 		if (msg.type === "move") {
