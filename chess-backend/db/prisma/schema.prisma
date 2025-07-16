@@ -25,6 +25,7 @@ model user {
   bio String
   gamesAsUser1 game[] @relation("User1Games")
   gamesAsUser2 game[] @relation("User2Games")
+  playerstats player_stats[] 
 }
 
 model game {
@@ -40,4 +41,14 @@ model game {
   userAsUser1 user @relation("User1Games", fields: [user1], references: [id])
   userAsUser2 user @relation("User2Games", fields: [user2], references: [id])
   
+}
+
+model player_stats {
+  id Int @id
+  userId String
+  rating Int
+  games_won Int
+  games_played Int
+  win_rate Int
+  user user @relation(fields: [userId],references: [id])
 }
