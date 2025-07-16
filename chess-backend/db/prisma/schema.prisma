@@ -10,12 +10,13 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+
 model user {
-  id String @id @map("_id")
+  id String @id @default(uuid())
   username String
   password String
   email String @unique
@@ -27,7 +28,7 @@ model user {
 }
 
 model game {
-  id  Int @id @map("_id")
+  id  Int @id @default(autoincrement())
   played_At DateTime
   blackmoves String[]
   whitemoves String[]
