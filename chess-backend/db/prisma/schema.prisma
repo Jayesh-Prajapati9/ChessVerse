@@ -22,7 +22,7 @@ model user {
   email String @unique
   avatar_Url String?
   joined_Date DateTime
-  bio String
+  bio String?
   gamesAsUser1 game[] @relation("User1Games")
   gamesAsUser2 game[] @relation("User2Games")
   playerstats player_stats[] 
