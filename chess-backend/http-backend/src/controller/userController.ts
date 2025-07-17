@@ -1,9 +1,38 @@
-import { Request, Response } from "express";
-import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import { Request, response, Response } from "express";
+import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { prismaClient } from "../../../db/src/index";
 
-export const userSignUp = (req: Request, res: Response) => {
+export const userSignUp = async (req: Request, res: Response) => {
 	const name = req.body.name;
+	const email = req.body.email;
+	const password = req.body.password;
+
+	const hashPassword = crypto
+		.createHash("sha256")
+		.update(password)
+		.digest("hex");
+
+	const dbResponse = await prismaClient.user.create({
+		data: {
+			username: name,
+			password: hashPassword,
+			email: email,
+			joined_Date: new Date(),
+		},
+	});
+
+	!dbResponse
+		? res.status(404).json({
+				message: "Invalid Credentials",
+		  })
+		: res.status(200).json({
+				message: "SignUp Successfully",
+				token: dbResponse.id,
+		  });
+};
+
+export const userSignIn = async (req: Request, res: Response) => {
 	const email = req.body.email;
 	const password = req.body.password;
 
@@ -14,30 +43,20 @@ export const userSignUp = (req: Request, res: Response) => {
 
 	const JWT_SECRET = process.env.JWT_SECRET || "JSON_WEB_TOKEN";
 
-	// db call
-
-	// @ts-ignore
-	const token = jwt.sign({ email }, JWT_SECRET);
-
-	res.status(200).json({
-		message: "SignUp Successfully",
-		token: token,
+	const user = await prismaClient.user.findUnique({
+		where: {
+			email: email,
+			password: hashPassword,
+		},
 	});
-};
 
-export const userSignIn = (req: Request, res: Response) => {
-	const email = req.body.email;
-	const password = req.body.password;
+	if (!user) {
+		res.status(404).json({ message: "Invalid Email or Password" });
+		return;
+	}
 
-	const hashPassword = crypto
-		.createHash("sha256")
-		.update(password)
-		.digest("hex");
+	const userId = user.id;
 
-	const JWT_SECRET = process.env.JWT_SECRET || "";
-
-	// db call
-	// @ts-ignore
 	const token = jwt.sign({ userId }, JWT_SECRET);
 
 	res.status(200).json({
@@ -46,16 +65,27 @@ export const userSignIn = (req: Request, res: Response) => {
 	});
 };
 
-export const getProfile = (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response) => {
 	const userId = req.params.userId;
-	// db call for the particular User
+	const userDetails = await prismaClient.user.findUnique({
+		where: {
+			id: userId,
+		},
+	});
+
+	if (!userDetails) {
+		res.status(404).json({
+			message: "Can't find the user details.",
+		});
+	}
 
 	res.status(200).json({
 		details: "User Details",
+		user: userDetails,
 	});
 };
 
-export const updateProfile = (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response) => {
 	const userId = req.params.userId;
 	const { name, newPassword, oldPassword } = req.body;
 
@@ -69,8 +99,21 @@ export const updateProfile = (req: Request, res: Response) => {
 		.update(oldPassword)
 		.digest("hex");
 
-	// db call for update profile
-	// hasholdpass == db password
+	const updatedUser = await prismaClient.user.update({
+		where: {
+			id: userId,
+			password: oldPassword,
+		},
+		data: {
+			password: newPassword,
+		},
+	});
+
+	if (!updateProfile) {
+		res.status(404).json({
+			message: "Invalid Password",
+		});
+	}
 
 	res.status(200).json({
 		message: "Profile Updated",
