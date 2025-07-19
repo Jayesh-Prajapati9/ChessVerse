@@ -40,13 +40,19 @@ export const ChessBoard: FC<ChessGameProps> = ({
 	isDark,
 	setIsDark,
 	location,
+	setTotalMove,
 }) => {
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const primaryBg = "bg-[#4c4fef]";
+	const primaryFg = "text-white";
 	const mutedText = isDark ? "text-[#a1a1aa]" : "text-[#52525b]";
 	const secondary = isDark ? "bg-[#27272a]" : "bg-[#e5e7eb]";
 	const secondaryText = isDark ? "text-[#f1f5f9]" : "text-[#18181b]";
+	const lightSquare = isDark ? "bg-[#94a3b8]" : "bg-[#f0d9b5]";
+	const darkSquare = isDark ? "bg-[#334155]" : "bg-[#b58863]";
+	const suggestion = isDark ? "bg-[#f1f5f9]" : "bg-green-500";
+	const text = isDark ? "text-white" : "text-[#18181b]";
 
 	useEffect(() => {
 		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
@@ -101,7 +107,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 				setBoard(chessRef.current.board());
 				setSelectedPiece(null);
 				setValidMove([]);
-
+				setTotalMove((prev) => prev + 1);
 				console.log("MOVE TURN2: ", chessRef.current.turn());
 				// After the move check whether any player is under the check ? If Yes then indicate the that player
 
@@ -146,6 +152,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 		setKingSquare(null);
 		setCanAttack([]);
 		setBoard(new Chess().board());
+		setIsSearchingGame(true);
 	};
 
 	const handleStartGame = () => {
@@ -239,23 +246,6 @@ export const ChessBoard: FC<ChessGameProps> = ({
 
 	return (
 		<>
-			{isCheckMate && (
-				<div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-					<p className="text-lg font-semibold">
-						♔ Game Over —{" "}
-						{gameResult?.reason === "checkmate"
-							? "Checkmate!"
-							: gameResult?.reason}
-					</p>
-					{gameResult?.winner && <p>🏆 Winner: {gameResult.winner}</p>}
-					<button
-						onClick={handleStartNewGame}
-						className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
-					>
-						Play Again
-					</button>
-				</div>
-			)}
 			<div className="grid grid-cols-8 grid-rows-8 w-full h-full rounded-4xl select-none">
 				{(playerColor === "w" ? board : [...board].reverse()).map(
 					(row, rowIndex) =>
@@ -294,7 +284,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 											handleMove(selectedSquare);
 										}}
 										className={`relative flex w-full h-full items-center justify-center cursor-pointer 
-								${isLight ? "bg-white" : "bg-orange-300"} 
+								${isLight ? `${lightSquare}` : `${darkSquare}`} 
 								${pieceHighlight}`}
 									>
 										<span className="text-5xl">
@@ -306,7 +296,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 									${
 										isUnderAttack
 											? "w-full h-full shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
-											: "w-3 h-3 rounded-full bg-green-500 opacity-80"
+											: `w-3 h-3 rounded-full ${suggestion} opacity-80`
 									}`}
 											/>
 										)}
@@ -328,18 +318,67 @@ export const ChessBoard: FC<ChessGameProps> = ({
 					>
 						<div className="text-center">
 							<div
-								className={`animate-spin rounded-full h-16 w-16 border-4 ${primaryBg} border-t-transparent mx-auto mb-4`}
+								className={`animate-spin rounded-full h-16 w-16 border-4 ${text} ${primaryBg} border-t-transparent mx-auto mb-4`}
 							></div>
-							<h3 className="text-xl font-bold mb-2">Finding Opponent...</h3>
+							<h3 className={`text-xl font-bold mb-2 ${text}`}>
+								Finding Opponent...
+							</h3>
 							<p className={`mb-6 ${mutedText}`}>
 								Please wait while we match you with a player
 							</p>
 							<button
-								onClick={() => setIsSearchingGame(false)}
-								className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg transition-colors`}
+								onClick={() => {
+									setIsSearchingGame(false);
+									window.location.href = "/dashboard";
+								}}
+								className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg cursor-pointer transition-all transform hover:scale-110`}
 							>
 								Cancel
 							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{isCheckMate && (
+				<div
+					className={`fixed inset-0 ${
+						isDark ? "bg-black/50" : "bg-white/70"
+					} flex items-center justify-center z-50 select-none`}
+				>
+					<div
+						className={`${card} rounded-xl p-5 ${cardBorder} border max-w-md w-full mx-4`}
+					>
+						<div className="text-center">
+							<h3 className={`text-3xl font-bold mb-2 ${text}`}>Game Over!</h3>
+							<p className={`text-xl font-semibold mt-5 ${mutedText}`}>
+								{gameResult?.reason === "checkmate"
+									? "Checkmate!"
+									: gameResult?.reason}
+							</p>
+							{gameResult?.winner && (
+								<p className={`${mutedText} text-xl mb-5 mt-2 font-bold`}>
+									{gameResult.winner.toUpperCase()} WON BY{" "}
+									{gameResult.reason.toUpperCase()}{" "}
+								</p>
+							)}
+							<div className="flex justify-around items-center">
+								<button
+									onClick={() => handleStartNewGame()}
+									className={`hover:opacity-80 px-6 py-2 rounded-lg transition-colors cursor-pointer ${primaryBg} ${primaryFg} transition-all transform hover:scale-110`}
+								>
+									Play again
+								</button>
+
+								<button
+									onClick={() => {
+										window.location.href = "/dashboard";
+									}}
+									className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg cursor-pointer transition-all transform hover:scale-110`}
+								>
+									Home
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
