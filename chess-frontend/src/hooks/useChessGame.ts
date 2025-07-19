@@ -36,6 +36,8 @@ export const useChessGame = () => {
 		localStorage.setItem("theme", newTheme ? "dark" : "light");
 	};
 
+	const [totalmove, setTotalMove] = useState<number>(0);
+
 	return {
 		// refs
 		socketRef,
@@ -80,5 +82,7 @@ export const useChessGame = () => {
 		setIsDark,
 		toggleTheme,
 		location,
+		totalmove,
+		setTotalMove,
 	};
 };
