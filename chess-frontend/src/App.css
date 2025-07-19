@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+/* Light theme (default) */
+
+	/* const bg = isDark ? "bg-[#101014]" : "bg-[#f8fafc]";
+	const text = isDark ? "text-white" : "text-[#18181b]";
+	const border = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
+	const card = isDark ? "bg-[#232326]" : "bg-white";
+	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
+	const cardText = isDark ? "text-white" : "text-[#18181b]";
+	const muted = isDark ? "bg-[#232326]" : "bg-[#f1f5f9]";
+	const mutedText = isDark ? "text-[#a1a1aa]" : "text-[#52525b]";
+	const accent = isDark ? "bg-[#27272a]" : "bg-[#e0e7ef]";
+	const secondary = isDark ? "bg-[#27272a]" : "bg-[#e5e7eb]";
+	const secondaryText = isDark ? "text-[#f1f5f9]" : "text-[#18181b]";
+	const primary = "text-[#4c4fef]";
+	const primaryBg = "bg-[#4c4fef]";
+	const primaryFg = "text-white";
+	const borderSelection = isDark
+		? "border-2 border-[#f1f6f9]"
+		: "border-2 border-[#0e0e10]"; */
