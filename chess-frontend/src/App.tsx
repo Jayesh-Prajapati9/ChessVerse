@@ -4,19 +4,12 @@ import LandingPage from "./pages/LandingPage";
 import { NotFound } from "./pages/NotFound";
 import { useEffect, useState } from "react";
 import { SignUp } from "./components/SignUp";
-import { ChessBoard } from "./components/ChessBoard";
 import { SignIn } from "./components/SignIn";
 import { Dashboard } from "./components/Dashboard";
 import Game from "./components/Game";
 
 function App() {
 	const [isDark, setIsDark] = useState(true);
-
-	const toggleTheme = () => {
-		const newTheme = !isDark;
-		setIsDark(newTheme);
-		localStorage.setItem("theme", newTheme ? "dark" : "light");
-	};
 
 	useEffect(() => {
 		// Apply theme to document element
@@ -34,12 +27,8 @@ function App() {
 					<Route path="/" element={<LandingPage />} />
 					<Route path="/signup" element={<SignUp isDark={isDark} />} />
 					<Route path="/login" element={<SignIn isDark={isDark} />} />
-					<Route path="/chessboard" element={<ChessBoard />} />
 					<Route path="/dashboard" element={<Dashboard />} />
-					<Route
-						path="/game"
-						element={<Game isDark={isDark} toggleTheme={toggleTheme} />}
-					></Route>
+					<Route path="/game" element={<Game />}></Route>
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</BrowserRouter>
