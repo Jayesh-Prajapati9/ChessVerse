@@ -33,7 +33,10 @@ export class GameManager {
 	}
 
 	setGame(roomId: string, ws: WebSocket, opponent: GameClient, mode: string) {
+		console.log("Mode of game :",mode);
+		
 		if (mode === "blitz") {
+			console.log("inside normal mode");
 			games.set(roomId, {
 				chess: this.chess,
 				players: [ws, opponent.socket],
@@ -46,6 +49,8 @@ export class GameManager {
 			});
 			this.startTimer(roomId);
 		} else if (mode === "rapid") {
+			console.log("inside normal mode");
+
 			games.set(roomId, {
 				chess: this.chess,
 				players: [ws, opponent.socket],
@@ -58,6 +63,8 @@ export class GameManager {
 			});
 			this.startTimer(roomId);
 		} else if (mode === "bullet") {
+			console.log("inside normal mode");
+
 			games.set(roomId, {
 				chess: this.chess,
 				players: [ws, opponent.socket],
@@ -70,6 +77,8 @@ export class GameManager {
 			});
 			this.startTimer(roomId);
 		} else if (mode === "normal") {
+			console.log("inside normal mode");
+
 			games.set(roomId, {
 				chess: this.chess,
 				players: [ws, opponent.socket],
@@ -80,47 +89,21 @@ export class GameManager {
 
 	startGame(ws: WebSocket, mode: string) {
 		console.log(`🎮 ${this.clientId} wants to start a game`);
-
-		if (waitingPlayer && waitingPlayer.id !== this.clientId) {
-			const opponent = waitingPlayer;
-			waitingPlayer = null;
-
-			const roomId = crypto.randomUUID();
-
-			this.setGame(roomId, ws, opponent, mode);
-
-			// Notify both players
-			opponent.socket.send(
-				JSON.stringify({
-					type: "game_started",
-					roomId,
-					color: "w",
-					board: this.chess.board(),
-					fen: this.chess.fen(),
-				})
-			);
-
-			ws.send(
-				JSON.stringify({
-					type: "game_started",
-					roomId,
-					color: "b",
-					board: this.chess.board(),
-					fen: this.chess.fen(),
-				})
-			);
-
-			console.log(`✅ GAME STARTED: ${this.clientId} vs ${opponent.id}`);
-		} else {
-			waitingPlayer = { socket: ws, id: this.clientId };
-			console.log(`${this.clientId} is waiting for an opponent`);
-		}
+		const client: GameClient = { socket: ws, id: this.clientId };
+		tryMatchPlayers(client, mode, this);
 	}
 
 	move(wss: WebSocketServer, ws: WebSocket, msg: any) {
+		console.log("in move ");
+
 		const { roomId, from, to, piece } = msg;
+		console.log("RoomId", roomId);
+
 		const game = games.get(roomId);
+		console.log(game);
+
 		if (!game) return;
+		console.log("Move init in ws");
 
 		const move = game.chess.move({ from, to });
 		if (!move) return;
@@ -138,6 +121,7 @@ export class GameManager {
 						turn: game.chess.turn(),
 					})
 				);
+				console.log("Send to client");
 			}
 		});
 
@@ -226,8 +210,12 @@ export class GameManager {
 	}
 
 	close() {
-		console.log(`Client disconnected: ${this.clientId}`);
-		waitingPlayer = null;
+		if (waitingPlayer?.id === this.clientId) {
+			console.log(
+				`⚠️ Waiting player ${this.clientId} disconnected. Clearing slot.`
+			);
+			waitingPlayer = null;
+		}
 	}
 
 	getGameOverReason(chess: Chess) {
@@ -239,3 +227,32 @@ export class GameManager {
 		return "unknown";
 	}
 }
+
+const tryMatchPlayers = (
+	client: GameClient,
+	mode: string,
+	manager: GameManager
+) => {
+	if (waitingPlayer && waitingPlayer.id !== client.id) {
+		const opponent = waitingPlayer;
+		waitingPlayer = null;
+
+		const roomId = crypto.randomUUID();
+		manager.setGame(roomId, client.socket, opponent, mode);
+
+		const gameState = {
+			type: "game_started",
+			roomId,
+			board: manager.chess.board(),
+			fen: manager.chess.fen(),
+		};
+
+		opponent.socket.send(JSON.stringify({ ...gameState, color: "w" }));
+		client.socket.send(JSON.stringify({ ...gameState, color: "b" }));
+
+		console.log(`✅ GAME STARTED: ${client.id} vs ${opponent.id}`);
+	} else {
+		waitingPlayer = client;
+		console.log(`${client.id} is waiting for an opponent`);
+	}
+};
