@@ -1,10 +1,10 @@
 import { Chess, type Square, type Piece } from "chess.js";
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 export const ChessBoard = () => {
 	const socketRef = useRef<WebSocket | null>(null);
 	const chessRef = useRef<Chess>(new Chess());
 	// Using the useRef hook becoz every time the chessboard re render it will create a new ws connection therefore to eliminate this useref is better option.
-
 	const [selectedPiece, setSelectedPiece] = useState<Square | null>(null);
 	const [validMove, setValidMove] = useState<Square[] | null>([]);
 	const [board, setBoard] = useState(chessRef.current.board());
@@ -24,10 +24,32 @@ export const ChessBoard = () => {
 		reason: string;
 	} | null>(null);
 	const [mode, setMode] = useState<string | null>(null);
+	const [isSearchingGame, setIsSearchingGame] = useState(true);
+	const [wsConnected, setWsConnected] = useState(false);
+	const location = useLocation();
+
+	const [isDark, setIsDark] = useState(true);
+	const toggleTheme = () => {
+		const newTheme = !isDark;
+		setIsDark(newTheme);
+		localStorage.setItem("theme", newTheme ? "dark" : "light");
+	};
+
+	const card = isDark ? "bg-[#232326]" : "bg-white";
+	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
+	const primaryBg = "bg-[#4c4fef]";
+	const mutedText = isDark ? "text-[#a1a1aa]" : "text-[#52525b]";
+	const secondary = isDark ? "bg-[#27272a]" : "bg-[#e5e7eb]";
+	const secondaryText = isDark ? "text-[#f1f5f9]" : "text-[#18181b]";
 
 	useEffect(() => {
 		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
 		initWebSocketConnection();
+		//theme
+		const savedTheme = localStorage.getItem("theme");
+		if (savedTheme) {
+			setIsDark(savedTheme === "dark");
+		}
 		return () => {
 			socketRef.current?.close();
 		};
@@ -39,17 +61,23 @@ export const ChessBoard = () => {
 		setCanAttack(attackedSquare);
 	}, [validMove, chessRef.current]);
 
+	useEffect(() => {
+		wsConnected ? handleStartGame() : null;
+	}, [wsConnected]);
+
 	const initWebSocketConnection = () => {
 		// When the website mount then a new websocket connection is created
 		socketRef.current = new WebSocket("ws://localhost:8000");
 		socketRef.current.onopen = () => {
 			console.log("🟢 Connected to WS server");
+			setWsConnected(true);
 		};
 
 		socketRef.current.onmessage = (event) => {
 			const msg = JSON.parse(event.data.toString());
 
 			if (msg.type === "game_started") {
+				setIsSearchingGame(false);
 				console.log("TURN: ", chessRef.current.turn());
 
 				setRoomId(msg.roomId);
@@ -75,13 +103,11 @@ export const ChessBoard = () => {
 					? chessRef.current.inCheck()
 						? setKingSquare(
 								chessRef.current.findPiece({ type: "k", color: "w" })
-							)
+						  )
 						: setKingSquare(null)
 					: chessRef.current.inCheck()
-						? setKingSquare(
-								chessRef.current.findPiece({ type: "k", color: "b" })
-							)
-						: setKingSquare(null);
+					? setKingSquare(chessRef.current.findPiece({ type: "k", color: "b" }))
+					: setKingSquare(null);
 			}
 
 			if (msg.type === "game_over") {
@@ -116,9 +142,12 @@ export const ChessBoard = () => {
 		setBoard(new Chess().board());
 	};
 
-	const handleStartGame = (mode: string) => {
+	const handleStartGame = () => {
 		if (!socketRef.current) return;
-		socketRef.current?.send(JSON.stringify({ type: "start_game", mode: mode }));
+		setMode(location.state.mode);
+		socketRef.current?.send(
+			JSON.stringify({ type: "start_game", mode: location.state.mode })
+		);
 	};
 
 	const handleMove = (square: Square) => {
@@ -169,10 +198,11 @@ export const ChessBoard = () => {
 			});
 
 			if (moveResult) {
+				console.log("send to ws");
 				socketRef.current?.send(
 					JSON.stringify({
 						type: "move",
-						roomId,
+						roomId: roomId,
 						from: selectedPiece,
 						to: square,
 						piece: piece,
@@ -245,15 +275,18 @@ export const ChessBoard = () => {
 									isSelected && kingSquare?.[0] === selectedSquare
 										? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1),inset_0_0_0_3px_rgba(239,68,68,1)]"
 										: isSelected
-											? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1)]"
-											: kingSquare?.[0] === selectedSquare
-												? "shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
-												: null;
+										? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1)]"
+										: kingSquare?.[0] === selectedSquare
+										? "shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
+										: null;
 
 								return (
 									<div
 										key={actualRowIndex + actualColIndex}
-										onClick={() => handleMove(selectedSquare)}
+										onClick={() => {
+											console.log("Move");
+											handleMove(selectedSquare);
+										}}
 										className={`relative flex w-full h-full items-center justify-center cursor-pointer 
 								${isLight ? "bg-white" : "bg-orange-300"} 
 								${pieceHighlight}`}
@@ -264,7 +297,11 @@ export const ChessBoard = () => {
 										{isValid && (
 											<div
 												className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-									${isUnderAttack ? "w-full h-full shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]" : "w-3 h-3 rounded-full bg-green-500 opacity-80"}`}
+									${
+										isUnderAttack
+											? "w-full h-full shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
+											: "w-3 h-3 rounded-full bg-green-500 opacity-80"
+									}`}
 											/>
 										)}
 									</div>
@@ -273,50 +310,34 @@ export const ChessBoard = () => {
 						)
 				)}
 			</div>
-
-			{playerColor === "w" ? (
-				<div className="text-indigo-300">
-					Pieces Capture:{" "}
-					{whiteCaptured
-						? whiteCaptured.map((x) => getPieces(x.type, x.color))
-						: "---"}
-				</div>
-			) : (
-				<div className="text-indigo-300">
-					Pieces Capture:{" "}
-					{blackCaptured
-						? blackCaptured.map((x) => getPieces(x.type, x.color))
-						: "---"}
+			{/* Game Finding Modal */}
+			{isSearchingGame && (
+				<div
+					className={`fixed inset-0 ${
+						isDark ? "bg-black/50" : "bg-white/70"
+					} flex items-center justify-center z-50 select-none`}
+				>
+					<div
+						className={`${card} rounded-xl p-8 ${cardBorder} border max-w-md w-full mx-4`}
+					>
+						<div className="text-center">
+							<div
+								className={`animate-spin rounded-full h-16 w-16 border-4 ${primaryBg} border-t-transparent mx-auto mb-4`}
+							></div>
+							<h3 className="text-xl font-bold mb-2">Finding Opponent...</h3>
+							<p className={`mb-6 ${mutedText}`}>
+								Please wait while we match you with a player
+							</p>
+							<button
+								onClick={() => setIsSearchingGame(false)}
+								className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg transition-colors`}
+							>
+								Cancel
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
-			{mode === "blitz" ? (
-				playerColor === "w" ? (
-					<div>Timer : {whiteTimer} sec</div>
-				) : (
-					<div>Timer : {blackTimer} sec</div>
-				)
-			) : null}
-
-			<button
-				className="border-2 rounded-2xl p-1 text-indigo-300 cursor-pointer "
-				onClick={() => {
-					handleStartGame("normal");
-					setMode("normal");
-				}}
-			>
-				Start Normal Game
-			</button>
-			<button
-				className="border-2 rounded-2xl p-1 text-indigo-300 cursor-pointer "
-				onClick={() => {
-					handleStartGame("blitz");
-					setMode("blitz");
-				}}
-			>
-				Start Blitz Game
-			</button>
-			{/* <div>TURN {chessRef.current.turn()}</div> */}
-			{/* <button onClick={}></button> */}
 		</div>
 	);
 };

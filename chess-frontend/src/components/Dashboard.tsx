@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 type GameMode = "normal" | "blitz" | "rapid" | "bullet" | null;
 
 export const Dashboard = () => {
-	const [isSearchingGame, setIsSearchingGame] = useState(false);
 	const [isDark, setIsDark] = useState(true);
 	const [mode, setMode] = useState<GameMode>("normal");
 	const navigate = useNavigate();
@@ -339,35 +338,6 @@ export const Dashboard = () => {
 					</div>
 				</div>
 			</div>
-
-			{/* Game Finding Modal */}
-			{isSearchingGame && (
-				<div
-					className={`fixed inset-0 ${
-						isDark ? "bg-black/50" : "bg-white/70"
-					} flex items-center justify-center z-50`}
-				>
-					<div
-						className={`${card} rounded-xl p-8 ${cardBorder} border max-w-md w-full mx-4`}
-					>
-						<div className="text-center">
-							<div
-								className={`animate-spin rounded-full h-16 w-16 border-4 ${primaryBg} border-t-transparent mx-auto mb-4`}
-							></div>
-							<h3 className="text-xl font-bold mb-2">Finding Opponent...</h3>
-							<p className={`mb-6 ${mutedText}`}>
-								Please wait while we match you with a player
-							</p>
-							<button
-								onClick={() => setIsSearchingGame(false)}
-								className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg transition-colors`}
-							>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };
