@@ -1,29 +1,62 @@
-import React, { useState, useEffect } from "react";
-import {
-	Crown,
-	Clock,
-	Flag,
-	Settings,
-	Home,
-} from "lucide-react";
+import { Crown, Clock, Flag, Settings, Home, Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ChessBoard } from "./ChessBoard";
+import { useChessGame } from "../hooks/useChessGame";
+import type { Piece } from "chess.js";
 
-interface GameProps {
-	isDark: boolean;
-	toggleTheme: () => void;
+function getPieces(type: string, color: string) {
+	const pieces: Record<string, [string, string]> = {
+		p: ["♙", "♟"],
+		r: ["♖", "♜"],
+		n: ["♘", "♞"],
+		b: ["♗", "♝"],
+		q: ["♕", "♛"],
+		k: ["♔", "♚"],
+	};
+	return color === "w" ? pieces[type][0] : pieces[type][1];
 }
 
-const Game: React.FC<GameProps> = ({ isDark }) => {
-	const [playerTime, setPlayerTime] = useState(600); // 10 minutes
-	const [opponentTime, setOpponentTime] = useState(600);
-	const [isPlayerTurn, setIsPlayerTurn] = useState(true);
-	const [gameStarted, setGameStarted] = useState(true);
-	const [capturedByPlayer, setCapturedByPlayer] = useState(["♟", "♞", "♝"]);
-	const [capturedByOpponent, setCapturedByOpponent] = useState(["♙", "♘"]);
+const Game = () => {
+	const game = useChessGame();
+    const isDark = game.isDark;
+    const toggleTheme = game.toggleTheme
+	const card = isDark ? "bg-[#232326]" : "bg-white";
+	const cardText = isDark ? "text-white" : "text-[#18181b]";
+	const accent = isDark ? "bg-[#27272a]" : "bg-[#e0e7ef]";
+	const border = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 
-
-
+	const renderCapturedPieces = (pieces: Piece[] | null, title: string) => {
+		return (
+			<div
+				className={`p-3 rounded-lg ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+			>
+				<h4
+					className={`text-sm font-bold mb-2 ${
+						isDark ? "text-gray-300" : "text-gray-700"
+					}`}
+				>
+					{title}
+				</h4>
+				<div className="flex flex-wrap gap-1">
+					{pieces ? (
+						pieces.map((piece, index) => (
+							<span key={index} className="text-lg">
+								{getPieces(piece.type, piece.color)}
+							</span>
+						))
+					) : (
+						<span
+							className={`text-xs ${
+								isDark ? "text-gray-500" : "text-gray-400"
+							}`}
+						>
+							No pieces captured
+						</span>
+					)}
+				</div>
+			</div>
+		);
+	};
 	return (
 		<div
 			className={`min-h-screen transition-all duration-500 ${
@@ -56,7 +89,7 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 							}`}
 						>
 							<Crown
-								className={`h-8 w-8 ${
+								className={`h-6 w-6 ${
 									isDark ? "text-gray-300" : "text-gray-700"
 								}`}
 							/>
@@ -71,6 +104,16 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 					</div>
 
 					<div className="flex items-center space-x-4">
+						<button
+							onClick={toggleTheme}
+							className={`p-3 rounded-full transition-all transform hover:scale-110 ${card} ${cardText} hover:${accent} ${border} hover:cursor-pointer`}
+						>
+							{isDark ? (
+								<Sun className="h-5 w-5" />
+							) : (
+								<Moon className="h-5 w-5" />
+							)}
+						</button>
 						<button
 							className={`p-3 rounded-full transition-all ${
 								isDark
@@ -130,7 +173,7 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 								</div>
 								<div
 									className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-										!isPlayerTurn && gameStarted
+										!game.playerColor && game.gameStarted
 											? isDark
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
@@ -144,26 +187,24 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 										className={`font-mono text-lg font-bold ${
 											isDark ? "text-white" : "text-black"
 										}`}
-									>
-									
-									</span>
+									></span>
 								</div>
 							</div>
 
 							{/* Captured by Player */}
-
+							{renderCapturedPieces(game.whiteCaptured, "Your Captures")}
 
 							{/* Chess Board */}
 							<div className="relative my-6">
 								<div className="aspect-square w-full max-w-[90vw] sm:max-w-[670px] mx-auto border-4 border-gray-700 rounded-xl overflow-hidden">
-									<ChessBoard/>
+									<ChessBoard {...game} />
 								</div>
 							</div>
 
 							{/* Captured by Opponent */}
 
 							{/* Player Info */}
-							<div className="flex items-center justify-between mt-4">
+							<div className="flex items-center justify-between mt-4 mb-4">
 								<div className="flex items-center space-x-3">
 									<div
 										className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -195,9 +236,10 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 										</p>
 									</div>
 								</div>
+
 								<div
 									className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-										isPlayerTurn && gameStarted
+										game.playerColor && game.gameStarted
 											? isDark
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
@@ -211,10 +253,10 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 										className={`font-mono text-lg font-bold ${
 											isDark ? "text-white" : "text-black"
 										}`}
-									>
-									</span>
+									></span>
 								</div>
 							</div>
+							{renderCapturedPieces(game.blackCaptured, "Opponent Captures")}
 						</div>
 					</div>
 
@@ -285,7 +327,9 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 											isDark ? "text-white" : "text-black"
 										}`}
 									>
-										{isPlayerTurn ? "Your turn" : "Opponent's turn"}
+										{game.chessRef.current.turn() === game.playerColor
+											? "Your turn"
+											: "Opponent's turn"}
 									</span>
 								</div>
 								<div className="flex justify-between">
@@ -299,7 +343,7 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 											isDark ? "text-white" : "text-black"
 										}`}
 									>
-										12
+										{game.totalmove}
 									</span>
 								</div>
 								<div className="flex justify-between">
@@ -314,33 +358,6 @@ const Game: React.FC<GameProps> = ({ isDark }) => {
 										}`}
 									>
 										Blitz 10+0
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span
-										className={`${isDark ? "text-gray-400" : "text-gray-600"}`}
-									>
-										Material:
-									</span>
-									<span
-										className={`font-semibold ${
-											capturedByPlayer.length > capturedByOpponent.length
-												? "text-green-500"
-												: capturedByPlayer.length < capturedByOpponent.length
-												? "text-red-500"
-												: isDark
-												? "text-white"
-												: "text-black"
-										}`}
-									>
-										{capturedByPlayer.length > capturedByOpponent.length
-											? "+"
-											: capturedByPlayer.length < capturedByOpponent.length
-											? "-"
-											: "="}
-										{Math.abs(
-											capturedByPlayer.length - capturedByOpponent.length
-										)}
 									</span>
 								</div>
 							</div>
