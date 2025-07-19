@@ -36,7 +36,7 @@ export const Dashboard = () => {
 	};
 
 	const handleFindGame = (mode: GameMode) => {
-		navigate("/chessboard", {
+		navigate("/game", {
 			state: {
 				mode: mode,
 			},

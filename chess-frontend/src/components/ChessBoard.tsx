@@ -232,7 +232,7 @@ export const ChessBoard = () => {
 	};
 
 	return (
-		<div>
+		<>
 			{isCheckMate && (
 				<div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
 					<p className="text-lg font-semibold">
@@ -250,7 +250,7 @@ export const ChessBoard = () => {
 					</button>
 				</div>
 			)}
-			<div className="w-[480px] h-[480px] grid grid-cols-8 grid-rows-8 border-2 border-black select-none">
+			<div className="grid grid-cols-8 grid-rows-8 w-full h-	full rounded-4xl select-none">
 				{(playerColor === "w" ? board : [...board].reverse()).map(
 					(row, rowIndex) =>
 						(playerColor === "w" ? row : [...row].reverse()).map(
@@ -338,7 +338,7 @@ export const ChessBoard = () => {
 					</div>
 				</div>
 			)}
-		</div>
+		</>
 	);
 };
 
