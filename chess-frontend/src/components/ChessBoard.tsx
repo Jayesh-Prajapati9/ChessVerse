@@ -1,40 +1,46 @@
-import { Chess, type Square, type Piece } from "chess.js";
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-export const ChessBoard = () => {
-	const socketRef = useRef<WebSocket | null>(null);
-	const chessRef = useRef<Chess>(new Chess());
-	// Using the useRef hook becoz every time the chessboard re render it will create a new ws connection therefore to eliminate this useref is better option.
-	const [selectedPiece, setSelectedPiece] = useState<Square | null>(null);
-	const [validMove, setValidMove] = useState<Square[] | null>([]);
-	const [board, setBoard] = useState(chessRef.current.board());
-	const [blackCaptured, setBlackCaptured] = useState<Piece[] | null>(null);
-	const [whiteCaptured, setWhiteCaptured] = useState<Piece[] | null>(null);
-	const [kingSquare, setKingSquare] = useState<Square[] | null>(null);
-	const [canAttack, setCanAttack] = useState<Square[] | null>(null);
-	const [roomId, setRoomId] = useState<string | null>(null);
-	const [gameStarted, setGameStarted] = useState<boolean>(false);
-	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
-	const [whiteTimer, setWhiteTimer] = useState<number>(180);
-	const [blackTimer, setBlackTimer] = useState<number>(180);
-	// Here this playerColor is just used once every time new game is started to show the board acc to the color
-	const [isCheckMate, setIsCheckMate] = useState<boolean>(false);
-	const [gameResult, setGameResult] = useState<{
-		winner: string;
-		reason: string;
-	} | null>(null);
-	const [mode, setMode] = useState<string | null>(null);
-	const [isSearchingGame, setIsSearchingGame] = useState(true);
-	const [wsConnected, setWsConnected] = useState(false);
-	const location = useLocation();
+import { Chess, type Square } from "chess.js";
+import { useEffect } from "react";
+import { type FC } from "react";
+import type { ChessGameProps } from "../types/ChessType";
 
-	const [isDark, setIsDark] = useState(true);
-	const toggleTheme = () => {
-		const newTheme = !isDark;
-		setIsDark(newTheme);
-		localStorage.setItem("theme", newTheme ? "dark" : "light");
-	};
-
+export const ChessBoard: FC<ChessGameProps> = ({
+	socketRef,
+	chessRef,
+	selectedPiece,
+	setSelectedPiece,
+	validMove,
+	setValidMove,
+	board,
+	setBoard,
+	blackCaptured,
+	setBlackCaptured,
+	whiteCaptured,
+	setWhiteCaptured,
+	kingSquare,
+	setKingSquare,
+	canAttack,
+	setCanAttack,
+	roomId,
+	setRoomId,
+	gameStarted,
+	setGameStarted,
+	playerColor,
+	setPlayerColor,
+	setWhiteTimer,
+	setBlackTimer,
+	isCheckMate,
+	setIsCheckMate,
+	gameResult,
+	setGameResult,
+	setMode,
+	isSearchingGame,
+	setIsSearchingGame,
+	wsConnected,
+	setWsConnected,
+	isDark,
+	setIsDark,
+	location,
+}) => {
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const primaryBg = "bg-[#4c4fef]";
@@ -250,7 +256,7 @@ export const ChessBoard = () => {
 					</button>
 				</div>
 			)}
-			<div className="grid grid-cols-8 grid-rows-8 w-full h-	full rounded-4xl select-none">
+			<div className="grid grid-cols-8 grid-rows-8 w-full h-full rounded-4xl select-none">
 				{(playerColor === "w" ? board : [...board].reverse()).map(
 					(row, rowIndex) =>
 						(playerColor === "w" ? row : [...row].reverse()).map(
