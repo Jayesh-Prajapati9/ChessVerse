@@ -1,4 +1,5 @@
 "use client";
+import "../App.css";
 import { useState, useEffect } from "react";
 import {
 	Crown,
@@ -50,7 +51,10 @@ export const Dashboard = () => {
 	const bg = isDark ? "bg-[#101014]" : "bg-[#f8fafc]";
 	const text = isDark ? "text-white" : "text-[#18181b]";
 	const border = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
-	const card = isDark ? "bg-[#232326]" : "bg-white";
+	const card = isDark
+		? "bg-[#232326]/30 backdrop-blur-lg border border-white/20 ring-1 ring-white/10 shadow-xl"
+		: "bg-white/40 backdrop-blur-lg border border-black/10 ring-1 ring-black/5 shadow-xl";
+
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const cardText = isDark ? "text-white" : "text-[#18181b]";
 	const muted = isDark ? "bg-[#232326]" : "bg-[#f1f5f9]";
@@ -116,7 +120,7 @@ export const Dashboard = () => {
 
 				<div className="grid lg:grid-cols-3 gap-8">
 					{/* Left Column - Quick Actions */}
-					<div className="lg:col-span-2 space-y-6">
+					<div className="lg:col-span-2 shine space-y-6">
 						{/* Quick Play Section */}
 						<div className={`${card} rounded-xl p-8 ${cardBorder} border`}>
 							<h2 className="text-3xl font-bold mb-8 text-center">
@@ -249,7 +253,7 @@ export const Dashboard = () => {
 							<h2 className="text-xl font-bold mb-6">Your Stats</h2>
 							<div className="space-y-4">
 								<div
-									className={`flex justify-between items-center p-3 ${muted} rounded-lg`}
+									className={`flex justify-between items-center p-3 ${muted} rounded-lg `}
 								>
 									<span className={mutedText}>Current Rating</span>
 									<span className={`text-2xl font-bold ${primary}`}>1562</span>
