@@ -4,6 +4,7 @@ import { WebSocket, WebSocketServer } from "ws";
 type GameClient = {
 	socket: WebSocket;
 	id: string;
+	mode: string;
 };
 
 const games = new Map<
@@ -20,7 +21,12 @@ const games = new Map<
 	}
 >();
 
-let waitingPlayer: GameClient | null = null;
+const waitingPlayers: Record<string, GameClient | null> = {
+	blitz: null,
+	rapid: null,
+	bullet: null,
+	normal: null,
+};
 
 export class GameManager {
 	clientId: string;
@@ -33,8 +39,8 @@ export class GameManager {
 	}
 
 	setGame(roomId: string, ws: WebSocket, opponent: GameClient, mode: string) {
-		console.log("Mode of game :",mode);
-		
+		console.log("Mode of game :", mode);
+
 		if (mode === "blitz") {
 			console.log("inside normal mode");
 			games.set(roomId, {
@@ -89,7 +95,7 @@ export class GameManager {
 
 	startGame(ws: WebSocket, mode: string) {
 		console.log(`🎮 ${this.clientId} wants to start a game`);
-		const client: GameClient = { socket: ws, id: this.clientId };
+		const client: GameClient = { socket: ws, id: this.clientId, mode: mode };
 		tryMatchPlayers(client, mode, this);
 	}
 
@@ -171,14 +177,23 @@ export class GameManager {
 
 			turn === "w" ? game.timers.white-- : game.timers.black--;
 
+			const formatTime = (seconds: number) => {
+				const min = Math.floor(seconds / 60)
+					.toString()
+					.padStart(2, "0");
+				const sec = (seconds % 60).toString().padStart(2, "0");
+				return `${min}:${sec}`;
+			};
+
 			// Broadcast timer update
 			game.players.forEach((socket) => {
 				if (socket.readyState === socket.OPEN) {
+					if (!game.timers) return;
 					socket.send(
 						JSON.stringify({
 							type: "timer_update",
-							white: game.timers?.white,
-							black: game.timers?.black,
+							white: formatTime(game.timers.white),
+							black: formatTime(game.timers.black),
 						})
 					);
 				}
@@ -210,11 +225,12 @@ export class GameManager {
 	}
 
 	close() {
-		if (waitingPlayer?.id === this.clientId) {
-			console.log(
-				`⚠️ Waiting player ${this.clientId} disconnected. Clearing slot.`
-			);
-			waitingPlayer = null;
+		console.log(`Client disconnected: ${this.clientId}`);
+		for (const mode in waitingPlayers) {
+			if (waitingPlayers[mode]?.id === this.clientId) {
+				waitingPlayers[mode] = null;
+				console.log(`❌ Removed disconnected client from ${mode} queue`);
+			}
 		}
 	}
 
@@ -233,9 +249,9 @@ const tryMatchPlayers = (
 	mode: string,
 	manager: GameManager
 ) => {
-	if (waitingPlayer && waitingPlayer.id !== client.id) {
-		const opponent = waitingPlayer;
-		waitingPlayer = null;
+	if (waitingPlayers[mode] && waitingPlayers[mode].id !== client.id) {
+		const opponent = waitingPlayers[mode];
+		waitingPlayers[mode] = null;
 
 		const roomId = crypto.randomUUID();
 		manager.setGame(roomId, client.socket, opponent, mode);
@@ -252,7 +268,7 @@ const tryMatchPlayers = (
 
 		console.log(`✅ GAME STARTED: ${client.id} vs ${opponent.id}`);
 	} else {
-		waitingPlayer = client;
-		console.log(`${client.id} is waiting for an opponent`);
+		waitingPlayers[mode] = client;
+		console.log(`${client.id} is waiting for an opponent for ${mode} game`);
 	}
 };
