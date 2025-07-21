@@ -16,8 +16,8 @@ export const useChessGame = () => {
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [gameStarted, setGameStarted] = useState<boolean>(false);
 	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
-	const [whiteTimer, setWhiteTimer] = useState<number>(180);
-	const [blackTimer, setBlackTimer] = useState<number>(180);
+	const [whiteTimer, setWhiteTimer] = useState<number|null>(null);
+	const [blackTimer, setBlackTimer] = useState<number|null>(null);
 	// Here this playerColor is just used once every time new game is started to show the board acc to the color
 	const [isCheckMate, setIsCheckMate] = useState<boolean>(false);
 	const [gameResult, setGameResult] = useState<{
