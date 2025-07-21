@@ -249,28 +249,28 @@ export const Dashboard = () => {
 					{/* Right Column - Stats */}
 					<div className="space-y-6">
 						{/* Player Stats */}
-						<div className={`${card} rounded-xl p-6 ${cardBorder} border`}>
-							<h2 className="text-xl font-bold mb-6">Your Stats</h2>
-							<div className="space-y-4">
+						<div className={`${card} rounded-xl p-3 ${cardBorder} border`}>
+							<h2 className="text-xl font-bold mb-6 ml-3 mt-3">Your Stats</h2>
+							<div className="space-y-4 mb-3">
 								<div
 									className={`flex justify-between items-center p-3 ${muted} rounded-lg `}
 								>
 									<span className={mutedText}>Current Rating</span>
 									<span className={`text-2xl font-bold ${primary}`}>1562</span>
 								</div>
-								<div className="flex justify-between items-center">
+								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Games Played</span>
 									<span className="font-bold">247</span>
 								</div>
-								<div className="flex justify-between items-center">
+								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Win Rate</span>
 									<span className="font-bold text-green-500">68%</span>
 								</div>
-								<div className="flex justify-between items-center">
+								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Best Streak</span>
 									<span className="font-bold">12 wins</span>
 								</div>
-								<div className="flex justify-between items-center">
+								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Avg Accuracy</span>
 									<span className="font-bold">84%</span>
 								</div>

@@ -18,8 +18,8 @@ function getPieces(type: string, color: string) {
 
 const Game = () => {
 	const game = useChessGame();
-    const isDark = game.isDark;
-    const toggleTheme = game.toggleTheme
+	const isDark = game.isDark;
+	const toggleTheme = game.toggleTheme;
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardText = isDark ? "text-white" : "text-[#18181b]";
 	const accent = isDark ? "bg-[#27272a]" : "bg-[#e0e7ef]";
@@ -173,7 +173,7 @@ const Game = () => {
 								</div>
 								<div
 									className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-										!game.playerColor && game.gameStarted
+										game.chessRef.current.turn() !== game.playerColor
 											? isDark
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
@@ -187,7 +187,15 @@ const Game = () => {
 										className={`font-mono text-lg font-bold ${
 											isDark ? "text-white" : "text-black"
 										}`}
-									></span>
+									>
+										{game.playerColor !== "b"
+											? game.blackTimer
+												? game.blackTimer
+												: "0:00"
+											: game.whiteTimer
+											? game.whiteTimer
+											: "0:00"}
+									</span>
 								</div>
 							</div>
 
@@ -239,7 +247,7 @@ const Game = () => {
 
 								<div
 									className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-										game.playerColor && game.gameStarted
+										game.chessRef.current.turn() === game.playerColor
 											? isDark
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
@@ -253,7 +261,15 @@ const Game = () => {
 										className={`font-mono text-lg font-bold ${
 											isDark ? "text-white" : "text-black"
 										}`}
-									></span>
+									>
+										{game.playerColor !== "w"
+											? game.blackTimer
+												? game.blackTimer
+												: "0:00"
+											: game.whiteTimer
+											? game.whiteTimer
+											: "0:00"}
+									</span>
 								</div>
 							</div>
 							{renderCapturedPieces(game.blackCaptured, "Opponent Captures")}
