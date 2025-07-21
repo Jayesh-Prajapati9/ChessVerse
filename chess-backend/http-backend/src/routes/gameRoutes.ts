@@ -1,9 +1,10 @@
 import express from "express";
-import { getGameDetails } from "../controller/gameController";
+import { getAIMove, getGameDetails } from "../controller/gameController";
 
 
 const router = express.Router();
 
-router.get('/:gameId/details',getGameDetails)
+router.get('/:gameId/details', getGameDetails)
+router.post('/ai/move',getAIMove)
 
 export const gameRoutes = router;
