@@ -1,0 +1,8 @@
+{
+	"files": [],
+	"references": [
+		{ "path": "./db" },
+		{ "path": "./http-backend" },
+		{ "path": "./ws-backend" }
+	]
+}
