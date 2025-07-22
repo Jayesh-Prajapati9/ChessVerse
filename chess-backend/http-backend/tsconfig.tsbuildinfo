@@ -1,1 +1,1 @@
-{"root":["./src/config.ts","./src/index.ts","./src/controller/gameController.ts","./src/controller/userController.ts","./src/middleware/userAuth.ts","./src/models/bestMove.ts","./src/routes/gameRoutes.ts","./src/routes/userRoutes.ts"],"version":"5.8.3"}
+{"root":["./src/config.ts","./src/index.ts","./src/controller/gameController.ts","./src/controller/userController.ts","./src/middleware/userAuth.ts","./src/models/getBestMove.ts","./src/routes/gameRoutes.ts","./src/routes/userRoutes.ts"],"version":"5.8.3"}

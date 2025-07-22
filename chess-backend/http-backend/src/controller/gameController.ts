@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getBestMove } from "../models/bestMove";
+import { getBestMove } from "../models/getBestMove";
 
 export const getGameDetails = () => {};
 
