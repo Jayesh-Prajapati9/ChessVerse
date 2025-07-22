@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Crown, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 interface SignupProps {
@@ -17,6 +17,7 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
@@ -43,8 +44,11 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 				password: formData.password,
 			}
 		);
-		console.log(axiosRequest);
-		// axiosRequest ? (window.location.href = "/dashboard") : null;
+		if (axiosRequest.status === 404) {
+			alert(axiosRequest.data.message);
+		} else if (axiosRequest.status === 200) {
+			navigate("/dashboard");
+		}
 		setIsLoading(false);
 	};
 
@@ -81,24 +85,32 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 								}`}
 							>
 								<Crown
-									className={`h-10 w-10 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+									className={`h-10 w-10 ${
+										isDark ? "text-gray-300" : "text-gray-700"
+									}`}
 								/>
 							</div>
 							<span
-								className={`text-4xl font-bold ${isDark ? "text-white" : "text-black"}`}
+								className={`text-4xl font-bold ${
+									isDark ? "text-white" : "text-black"
+								}`}
 							>
 								Chess Verse
 							</span>
 						</div>
 
 						<h1
-							className={`text-5xl font-bold mb-6 ${isDark ? "text-white" : "text-black"}`}
+							className={`text-5xl font-bold mb-6 ${
+								isDark ? "text-white" : "text-black"
+							}`}
 						>
 							Join the Elite
 						</h1>
 
 						<p
-							className={`text-xl leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}
+							className={`text-xl leading-relaxed ${
+								isDark ? "text-gray-400" : "text-gray-600"
+							}`}
 						>
 							Start your journey to becoming a chess grandmaster. Join millions
 							of players worldwide.
@@ -120,17 +132,23 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 									}`}
 								>
 									<Crown
-										className={`h-8 w-8 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+										className={`h-8 w-8 ${
+											isDark ? "text-gray-300" : "text-gray-700"
+										}`}
 									/>
 								</div>
 								<span
-									className={`text-2xl font-bold ${isDark ? "text-white" : "text-black"}`}
+									className={`text-2xl font-bold ${
+										isDark ? "text-white" : "text-black"
+									}`}
 								>
 									Chess Verse
 								</span>
 							</div>
 							<h1
-								className={`text-3xl font-bold ${isDark ? "text-white" : "text-black"}`}
+								className={`text-3xl font-bold ${
+									isDark ? "text-white" : "text-black"
+								}`}
 							>
 								Join the Elite
 							</h1>
@@ -299,7 +317,9 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 								<div className="flex items-center select-none">
 									<input type="checkbox" className="rounded mr-2" required />
 									<span
-										className={`text-sm select-none ${isDark ? "text-gray-400" : "text-gray-600"}`}
+										className={`text-sm select-none ${
+											isDark ? "text-gray-400" : "text-gray-600"
+										}`}
 									>
 										I agree to the{" "}
 										<a
@@ -340,7 +360,9 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 
 								<div className="text-center select-none">
 									<span
-										className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+										className={`text-sm ${
+											isDark ? "text-gray-400" : "text-gray-600"
+										}`}
 									>
 										Already have an account?{" "}
 										<Link
