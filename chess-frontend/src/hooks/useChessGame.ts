@@ -1,6 +1,7 @@
 import { Chess, type Piece, type Square } from "chess.js";
 import { useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useTheme } from "./useTheme";
 
 export const useChessGame = () => {
 	const socketRef = useRef<WebSocket | null>(null);
@@ -16,8 +17,8 @@ export const useChessGame = () => {
 	const [roomId, setRoomId] = useState<string | null>(null);
 	const [gameStarted, setGameStarted] = useState<boolean>(false);
 	const [playerColor, setPlayerColor] = useState<"w" | "b">("w");
-	const [whiteTimer, setWhiteTimer] = useState<number|null>(null);
-	const [blackTimer, setBlackTimer] = useState<number|null>(null);
+	const [whiteTimer, setWhiteTimer] = useState<number | null>(null);
+	const [blackTimer, setBlackTimer] = useState<number | null>(null);
 	// Here this playerColor is just used once every time new game is started to show the board acc to the color
 	const [isCheckMate, setIsCheckMate] = useState<boolean>(false);
 	const [gameResult, setGameResult] = useState<{
@@ -28,15 +29,8 @@ export const useChessGame = () => {
 	const [isSearchingGame, setIsSearchingGame] = useState(true);
 	const [wsConnected, setWsConnected] = useState(false);
 	const location = useLocation();
-
-	const [isDark, setIsDark] = useState(true);
-	const toggleTheme = () => {
-		const newTheme = !isDark;
-		setIsDark(newTheme);
-		localStorage.setItem("theme", newTheme ? "dark" : "light");
-	};
-
 	const [totalmove, setTotalMove] = useState<number>(0);
+	const { isDark, setIsDark, toggleTheme } = useTheme();
 
 	return {
 		// refs

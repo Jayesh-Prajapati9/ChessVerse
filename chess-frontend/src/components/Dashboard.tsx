@@ -1,6 +1,6 @@
 "use client";
 import "../App.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
 	Crown,
 	Trophy,
@@ -15,37 +15,21 @@ import {
 	Bot,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 
-type GameMode = "normal" | "blitz" | "rapid" | "bullet" | null;
+type GameMode = "normal" | "blitz" | "rapid" | "bullet" | "ai" | null;
 
 export const Dashboard = () => {
-	const [isDark, setIsDark] = useState(true);
+	const { isDark, toggleTheme } = useTheme();
 	const [mode, setMode] = useState<GameMode>("normal");
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		const savedTheme = localStorage.getItem("theme");
-		if (savedTheme) {
-			setIsDark(savedTheme === "dark");
-		}
-	}, []);
-
-	const toggleTheme = () => {
-		const newTheme = !isDark;
-		setIsDark(newTheme);
-		localStorage.setItem("theme", newTheme ? "dark" : "light");
-	};
-
-	const handleFindGame = (mode: GameMode) => {
+	const handleStartGame = (mode: GameMode) => {
 		navigate("/game", {
 			state: {
 				mode: mode,
 			},
 		});
-	};
-
-	const handleStartGame = (mode: GameMode) => {
-		handleFindGame(mode);
 	};
 
 	const bg = isDark ? "bg-[#101014]" : "bg-[#f8fafc]";
@@ -80,7 +64,7 @@ export const Dashboard = () => {
 						<div className={`p-2 rounded-xl ${card} ${border}`}>
 							<Crown className={`h-8 w-8 ${primary}`} />
 						</div>
-						<span className="text-2xl font-bold">ChessMaster</span>
+						<span className="text-2xl font-bold">ChessVerse</span>
 					</div>
 					<div className="flex items-center space-x-6">
 						<button
@@ -141,6 +125,10 @@ export const Dashboard = () => {
 									</div>
 								</button>
 								<button
+									onClick={() => {
+										setMode("ai");
+										handleStartGame("ai");
+									}}
 									className={`${card} hover:${accent} ${cardText} ${cardBorder} border px-8 py-12 rounded-xl font-bold text-xl transition-all shadow-lg transform hover:scale-105 hover:border-1.5 hover:border-white hover:cursor-pointer`}
 								>
 									<Bot className="h-12 w-12 mx-auto mb-4" />

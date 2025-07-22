@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
 	Crown,
 	Users,
@@ -12,22 +11,10 @@ import {
 	Moon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 
 const LandingPage = () => {
-	const [isDark, setIsDark] = useState(true);
-
-	useEffect(() => {
-		const savedTheme = localStorage.getItem("theme");
-		if (savedTheme) {
-			setIsDark(savedTheme === "dark");
-		}
-	}, []);
-
-	const toggleTheme = () => {
-		const newTheme = !isDark;
-		setIsDark(newTheme);
-		localStorage.setItem("theme", newTheme ? "dark" : "light");
-	};
+	const { isDark, toggleTheme } = useTheme();
 
 	return (
 		<div
@@ -68,7 +55,9 @@ const LandingPage = () => {
 							}`}
 						>
 							<Crown
-								className={`h-8 w-8 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+								className={`h-8 w-8 ${
+									isDark ? "text-gray-300" : "text-gray-700"
+								}`}
 							/>
 						</div>
 						<span
@@ -148,7 +137,7 @@ const LandingPage = () => {
 									isDark ? "text-white" : "text-black"
 								} drop-shadow-2xl`}
 							>
-								Conquer 
+								Conquer
 							</span>
 							<br />
 							<span
@@ -197,22 +186,30 @@ const LandingPage = () => {
 					<div className="absolute inset-0 overflow-hidden pointer-events-none">
 						<div className="absolute top-20 left-10 animate-bounce">
 							<Crown
-								className={`h-16 w-16 ${isDark ? "text-gray-700" : "text-gray-300"}`}
+								className={`h-16 w-16 ${
+									isDark ? "text-gray-700" : "text-gray-300"
+								}`}
 							/>
 						</div>
 						<div className="absolute top-40 right-20 animate-pulse">
 							<Shield
-								className={`h-12 w-12 ${isDark ? "text-gray-700" : "text-gray-300"}`}
+								className={`h-12 w-12 ${
+									isDark ? "text-gray-700" : "text-gray-300"
+								}`}
 							/>
 						</div>
 						<div className="absolute bottom-20 left-20 animate-bounce delay-200">
 							<Trophy
-								className={`h-18 w-18 ${isDark ? "text-gray-700" : "text-gray-300"}`}
+								className={`h-18 w-18 ${
+									isDark ? "text-gray-700" : "text-gray-300"
+								}`}
 							/>
 						</div>
 						<div className="absolute top-60 right-10 animate-pulse delay-300">
 							<Brain
-								className={`h-14 w-14 ${isDark ? "text-gray-700" : "text-gray-300"}`}
+								className={`h-14 w-14 ${
+									isDark ? "text-gray-700" : "text-gray-300"
+								}`}
 							/>
 						</div>
 					</div>
@@ -297,7 +294,9 @@ const LandingPage = () => {
 										className={`inline-flex p-4 rounded-xl ${feature.color} mb-6`}
 									>
 										<div
-											className={`${isDark ? "text-gray-300" : "text-gray-700"}`}
+											className={`${
+												isDark ? "text-gray-300" : "text-gray-700"
+											}`}
 										>
 											{feature.icon}
 										</div>
@@ -419,7 +418,9 @@ const LandingPage = () => {
 							}`}
 						>
 							<Crown
-								className={`h-6 w-6 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+								className={`h-6 w-6 ${
+									isDark ? "text-gray-300" : "text-gray-700"
+								}`}
 							/>
 						</div>
 						<span
