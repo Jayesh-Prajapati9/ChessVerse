@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { Crown, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { showToast } from "./ui/Toast";
+import { useTheme } from "../hooks/useTheme";
 
-interface SignupProps {
-	isDark: boolean;
-}
-
-export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
+export const SignUp = () => {
 	const [formData, setFormData] = useState({
 		name: "",
 		email: "",
@@ -18,6 +16,7 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+	const { isDark } = useTheme();
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
@@ -35,21 +34,31 @@ export const SignUp: React.FC<SignupProps> = ({ isDark }) => {
 		}
 
 		setIsLoading(true);
-
-		const axiosRequest = await axios.post(
-			"http://localhost:8080/api/v1/user/signup",
-			{
-				name: formData.name,
-				email: formData.email,
-				password: formData.password,
+		try {
+			const axiosRequest = await axios.post(
+				"http://localhost:8080/api/v1/user/signup",
+				{
+					name: formData.name,
+					email: formData.email,
+					password: formData.password,
+				}
+			);
+			if (axiosRequest.status === 200) {
+				navigate("/dashboard");
 			}
-		);
-		if (axiosRequest.status === 404) {
-			alert(axiosRequest.data.message);
-		} else if (axiosRequest.status === 200) {
-			navigate("/dashboard");
+			setIsLoading(false);
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				if (error.status === 401) {
+					showToast(
+						error.response?.data.message || "Login Error",
+						"error",
+						isDark
+					);
+					setIsLoading(false);
+				}
+			}
 		}
-		setIsLoading(false);
 	};
 
 	return (

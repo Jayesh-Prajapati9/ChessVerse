@@ -1,28 +1,48 @@
 import React, { useState } from "react";
 import { Crown, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import axios, { AxiosError } from "axios";
+import { showToast } from "./ui/Toast";
+import { useTheme } from "../hooks/useTheme";
 
-interface LoginProps {
-	isDark: boolean;
-}
-
-export const SignIn: React.FC<LoginProps> = ({ isDark }) => {
+export const SignIn = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
+	const { isDark } = useTheme();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
+		try {
+			const axiosResponse = await axios.post(
+				"http://localhost:8080/api/v1/user/signin",
+				{
+					email: email,
+					password: password,
+				}
+			);
+			console.log(axiosResponse);
 
-		const axiosResponse = await axios.post("http://localhost:8080/api/v1/user/signin", {
-			email: email,
-			password: password,
-		});
-		if (axiosResponse.status === 200) {
-			
+			if (axiosResponse.status === 200) {
+				const token = axiosResponse.data.token;
+				localStorage.setItem("token", token);
+				navigate("/dashboard");
+			}
+			setIsLoading(false);
+		} catch (error) {
+			if (error instanceof AxiosError) {
+				showToast(
+					error.response?.data.message || "Login Error",
+					"error",
+					isDark
+				);
+				setIsLoading(false);
+			} else {
+				showToast("Error while logging", "error", isDark);
+			}
 		}
 	};
 
@@ -59,24 +79,32 @@ export const SignIn: React.FC<LoginProps> = ({ isDark }) => {
 								}`}
 							>
 								<Crown
-									className={`h-10 w-10 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+									className={`h-10 w-10 ${
+										isDark ? "text-gray-300" : "text-gray-700"
+									}`}
 								/>
 							</div>
 							<span
-								className={`text-4xl font-bold ${isDark ? "text-white" : "text-black"}`}
+								className={`text-4xl font-bold ${
+									isDark ? "text-white" : "text-black"
+								}`}
 							>
 								Chess Verse
 							</span>
 						</div>
 
 						<h1
-							className={`text-5xl font-bold mb-6 ${isDark ? "text-white" : "text-black"}`}
+							className={`text-5xl font-bold mb-6 ${
+								isDark ? "text-white" : "text-black"
+							}`}
 						>
 							Welcome Back
 						</h1>
 
 						<p
-							className={`text-xl leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}
+							className={`text-xl leading-relaxed ${
+								isDark ? "text-gray-400" : "text-gray-600"
+							}`}
 						>
 							Continue your chess journey and challenge players from around the
 							world.
@@ -98,17 +126,23 @@ export const SignIn: React.FC<LoginProps> = ({ isDark }) => {
 									}`}
 								>
 									<Crown
-										className={`h-8 w-8 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+										className={`h-8 w-8 ${
+											isDark ? "text-gray-300" : "text-gray-700"
+										}`}
 									/>
 								</div>
 								<span
-									className={`text-3xl font-bold ${isDark ? "text-white" : "text-black"}`}
+									className={`text-3xl font-bold ${
+										isDark ? "text-white" : "text-black"
+									}`}
 								>
 									Chess Verse
 								</span>
 							</div>
 							<h1
-								className={`text-3xl font-bold ${isDark ? "text-white" : "text-black"}`}
+								className={`text-3xl font-bold ${
+									isDark ? "text-white" : "text-black"
+								}`}
 							>
 								Welcome Back
 							</h1>
@@ -199,7 +233,9 @@ export const SignIn: React.FC<LoginProps> = ({ isDark }) => {
 									<label className="flex items-center">
 										<input type="checkbox" className="rounded mr-2" />
 										<span
-											className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+											className={`text-sm ${
+												isDark ? "text-gray-400" : "text-gray-600"
+											}`}
 										>
 											Remember me
 										</span>
@@ -230,7 +266,9 @@ export const SignIn: React.FC<LoginProps> = ({ isDark }) => {
 
 								<div className="text-center">
 									<span
-										className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
+										className={`text-sm ${
+											isDark ? "text-gray-400" : "text-gray-600"
+										}`}
 									>
 										Don't have an account?{" "}
 										<Link
