@@ -45,8 +45,7 @@ model game {
 }
 
 model player_stats {
-  id Int @id
-  userId String
+  userId String @id
   rating Int
   games_won Int
   games_draw Int
