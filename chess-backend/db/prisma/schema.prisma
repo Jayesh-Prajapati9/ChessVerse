@@ -26,6 +26,7 @@ model user {
   gamesAsUser1 game[] @relation("User1Games")
   gamesAsUser2 game[] @relation("User2Games")
   playerstats player_stats[] 
+  achievement achievements[]
 }
 
 model game {
@@ -33,7 +34,7 @@ model game {
   played_At DateTime
   blackmoves String[]
   whitemoves String[]
-  winnerId Int?
+  winnerId String?
   
   user1 String
   user2 String 
@@ -48,7 +49,19 @@ model player_stats {
   userId String
   rating Int
   games_won Int
+  games_draw Int
   games_played Int
+  win_streak Int
   win_rate Int
   user user @relation(fields: [userId],references: [id])
+}
+
+model achievements {
+  id String @id @default(uuid())
+  user_id String
+  title String
+  description String
+  achieved_At DateTime
+  is_hidden Boolean
+  users user @relation(fields: [user_id],references: [id])
 }
