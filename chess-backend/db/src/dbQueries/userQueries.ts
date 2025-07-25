@@ -19,6 +19,17 @@ interface userStats {
 	};
 }
 
+export const createUser = async ({ username, password, email }: user) => {
+	const user = await prismaClient.user.create({
+		data: {
+			username: username,
+			password: password,
+			email: email,
+			joined_Date: new Date(),
+		},
+	});
+};
+
 export const getUserById = async (
 	id: string
 ): Promise<user | string | unknown> => {
