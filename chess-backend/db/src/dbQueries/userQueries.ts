@@ -19,15 +19,38 @@ interface userStats {
 	};
 }
 
-export const createUser = async ({ username, password, email }: user) => {
-	const user = await prismaClient.user.create({
-		data: {
-			username: username,
-			password: password,
-			email: email,
-			joined_Date: new Date(),
-		},
-	});
+type CreateUserPayload = {
+	username: string;
+	password: string;
+	email: string;
+};
+
+export const createUser = async ({
+	username,
+	password,
+	email,
+}: CreateUserPayload): Promise<user | string> => {
+	try {
+		const user = await prismaClient.user.create({
+			data: {
+				username: username,
+				password: password,
+				email: email,
+				joined_Date: new Date(),
+			},
+		});
+		if (user) {
+			return user;
+		} else {
+			return "Error While creating the user in DB";
+		}
+	} catch (error) {
+		if (error instanceof PrismaClientKnownRequestError) {
+			return error.message;
+		} else {
+			return "Error";
+		}
+	}
 };
 
 export const getUserById = async (
