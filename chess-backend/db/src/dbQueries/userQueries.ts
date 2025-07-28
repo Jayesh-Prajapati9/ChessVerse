@@ -18,12 +18,16 @@ interface userStats {
 		win_rate: number;
 	};
 }
-
-type CreateUserPayload = {
+interface CreateUserPayload {
 	username: string;
 	password: string;
 	email: string;
-};
+}
+
+interface UserPlayload {
+	email: string;
+	password: string;
+}
 
 export const createUser = async ({
 	username,
@@ -73,6 +77,28 @@ export const getUserById = async (
 			return error.message;
 		} else {
 			return error;
+		}
+	}
+};
+
+export const getUserByEmail = async ({ email, password }: UserPlayload): Promise<user | string > => {
+	try {
+		const user = await prismaClient.user.findUnique({
+			where: {
+				email: email,
+				password: password,
+			},
+		});
+		if (user) {
+			return user;
+		} else {
+			return "No such user found";
+		}
+	} catch (error) {
+		if (error instanceof PrismaClientKnownRequestError) {
+			return error.message;
+		} else {
+			return "Error";
 		}
 	}
 };
