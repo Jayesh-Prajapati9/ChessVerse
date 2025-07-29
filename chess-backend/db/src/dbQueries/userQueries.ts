@@ -1,5 +1,5 @@
 import { prismaClient } from "../index";
-import { user } from "../../generated/prisma";
+import { player_stats, user } from "../../generated/prisma";
 import { PrismaClientKnownRequestError } from "../../generated/prisma/runtime/library";
 
 interface UserUpdatePayload {
@@ -28,6 +28,10 @@ interface UserPlayload {
 	email: string;
 	password: string;
 }
+
+type QueryResult =
+	| { success: true; data: user | player_stats }
+	| { success: false; error: string | PrismaClientKnownRequestError | Error };
 
 export const createUser = async ({
 	username,
@@ -81,7 +85,10 @@ export const getUserById = async (
 	}
 };
 
-export const getUserByEmail = async ({ email, password }: UserPlayload): Promise<user | string > => {
+export const getUserByEmail = async ({
+	email,
+	password,
+}: UserPlayload): Promise<user | string> => {
 	try {
 		const user = await prismaClient.user.findUnique({
 			where: {
@@ -103,9 +110,7 @@ export const getUserByEmail = async ({ email, password }: UserPlayload): Promise
 	}
 };
 
-export const getUserStats = async (
-	id: string
-): Promise<string | user | unknown> => {
+export const getUserStats = async (id: string): Promise<QueryResult> => {
 	try {
 		const user = await prismaClient.player_stats.findUnique({
 			where: {
@@ -113,15 +118,29 @@ export const getUserStats = async (
 			},
 		});
 		if (user) {
-			return user;
+			return { success: true, data: user };
 		} else {
-			return "Failed to retrive stats";
+			return {
+				success: false,
+				error: "Cannot able to find the stats of the given id",
+			};
 		}
 	} catch (error) {
 		if (error instanceof PrismaClientKnownRequestError) {
-			return error.message;
+			return {
+				success: false,
+				error: error,
+			};
+		} else if (error instanceof Error) {
+			return {
+				success: false,
+				error: error,
+			};
 		} else {
-			return error;
+			return {
+				success: false,
+				error: new Error("Error Occured while fetching the user stats"),
+			};
 		}
 	}
 };
