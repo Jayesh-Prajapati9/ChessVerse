@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 export const userAuth = (req: Request, res: Response, next: NextFunction) => {
-	const { token } = req.body;
+	const token = req.cookies.token;
 
 	const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -10,7 +10,7 @@ export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 
 	if (!decoded || typeof decoded !== "object") {
 		res.status(401).json({
-			messgae: "JWT Error",
+			messgae: "Re-Login again to view the content",
 		});
 		return;
 	}
