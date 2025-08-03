@@ -5,14 +5,13 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "pnpm run build && node ./dist/index.js"
+    "dev": "pnpm build && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
