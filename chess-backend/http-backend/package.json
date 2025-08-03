@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc -b && node ./dist/index.js"
+    "build": "tsc -b",
+    "dev": "pnpm run build && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {
@@ -24,7 +26,6 @@
     "groq-sdk": "^0.27.0",
     "jsonwebtoken": "^9.0.2",
     "openai": "^5.10.1",
-    "tsconfig-paths": "^4.2.0",
     "zod": "^3.25.71"
   }
 }

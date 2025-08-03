@@ -1,12 +1,12 @@
 import { Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { prismaClient } from "../../../db/src/index";
+import { prismaClient } from "../../../db/dist"; 
 import {
 	createUser,
 	getUserByEmail,
 	getUserStats,
-} from "../../../db/src/index";
+} from "../../../db/dist";
 
 
 export const userSignUp = async (req: Request, res: Response) => {
