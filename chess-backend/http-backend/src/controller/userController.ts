@@ -1,7 +1,13 @@
 import { Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { prismaClient } from "../../../db/src/index";
+import { prismaClient } from "../../../db/dist"; 
+import {
+	createUser,
+	getUserByEmail,
+	getUserStats,
+} from "../../../db/dist";
+
 
 export const userSignUp = async (req: Request, res: Response) => {
 	const name = req.body.name;
@@ -13,22 +19,19 @@ export const userSignUp = async (req: Request, res: Response) => {
 		.update(password)
 		.digest("hex");
 
-	const dbResponse = await prismaClient.user.create({
-		data: {
-			username: name,
-			password: hashPassword,
-			email: email,
-			joined_Date: new Date(),
-		},
+	const dbResponse = await createUser({
+		username: name,
+		password: hashPassword,
+		email: email,
 	});
 
-	!dbResponse
-		? res.status(404).json({
-				message: "Invalid Credentials",
+	typeof dbResponse === "string"
+		? res.status(401).json({
+				message: dbResponse,
 		  })
 		: res.status(200).json({
 				message: "SignUp Successfully",
-				token: dbResponse.id,
+				userId: dbResponse.id,
 		  });
 };
 
@@ -43,21 +46,22 @@ export const userSignIn = async (req: Request, res: Response) => {
 
 	const JWT_SECRET = process.env.JWT_SECRET || "JSON_WEB_TOKEN";
 
-	const user = await prismaClient.user.findUnique({
-		where: {
-			email: email,
-			password: hashPassword,
-		},
-	});
+	const user = await getUserByEmail({ email, password: hashPassword });
 
-	if (!user) {
-		res.status(404).json({ message: "Invalid Email or Password" });
+	if (typeof user === "string") {
+		res.status(401).json({ message: "Invalid Email or Password" });
 		return;
 	}
-
 	const userId = user.id;
 
 	const token = jwt.sign({ userId }, JWT_SECRET);
+
+	res.cookie("token", token, {
+		httpOnly: true, //  can't access via JavaScript
+		secure: true, // only over HTTPS
+		sameSite: "none", //  protects from CSRF (or use 'Strict')
+		// maxAge:  15* 60 * 1000, // 15 minutes
+	});
 
 	res.status(200).json({
 		message: "SignIn Successfully",
@@ -74,7 +78,7 @@ export const getProfile = async (req: Request, res: Response) => {
 	});
 
 	if (!userDetails) {
-		res.status(404).json({
+		res.status(401).json({
 			message: "Can't find the user details.",
 		});
 	}
@@ -110,7 +114,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 	});
 
 	if (!updateProfile) {
-		res.status(404).json({
+		res.status(401).json({
 			message: "Invalid Password",
 		});
 	}
@@ -118,4 +122,24 @@ export const updateProfile = async (req: Request, res: Response) => {
 	res.status(200).json({
 		message: "Profile Updated",
 	});
+};
+
+export const getUserDetails = async (req: Request, res: Response) => {
+	const userId = req.body.userId;
+	if (!userId) {
+		res.status(401).json({
+			message: "User Id is empty",
+		});
+		return;
+	}
+
+	const userStats = await getUserStats(userId);
+
+	userStats.success
+		? res.status(200).json({
+				message: userStats.data,
+		  })
+		: res.status(404).json({
+				message: userStats.error.toString(),
+		  });
 };

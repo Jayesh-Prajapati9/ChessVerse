@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc -b && node ./dist/index.js"
+    "build": "tsc -b",
+    "dev": "pnpm build && node ./dist/index.js"
   },
   "keywords": [],
   "author": "",

@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+    output   = "../generated/prisma"
 }
 
 datasource db {
@@ -34,6 +34,7 @@ model game {
   played_At DateTime
   blackmoves String[]
   whitemoves String[]
+  fen String
   winnerId String?
   
   user1 String
