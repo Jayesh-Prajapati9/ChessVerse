@@ -1,6 +1,6 @@
-import { prismaClient } from "../index";
-import { player_stats, user } from "../../generated/prisma";
-import { PrismaClientKnownRequestError } from "../../generated/prisma/runtime/library";
+import { prismaClient } from "../index.js";
+import { player_stats, user } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 interface UserUpdatePayload {
 	id: string;

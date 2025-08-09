@@ -1,13 +1,8 @@
 import { Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { prismaClient } from "../../../db/dist"; 
-import {
-	createUser,
-	getUserByEmail,
-	getUserStats,
-} from "../../../db/dist";
-
+import { prismaClient } from "@repo/db";
+import { createUser, getUserStats, getUserByEmail } from "@repo/db";
 
 export const userSignUp = async (req: Request, res: Response) => {
 	const name = req.body.name;
@@ -28,11 +23,11 @@ export const userSignUp = async (req: Request, res: Response) => {
 	typeof dbResponse === "string"
 		? res.status(401).json({
 				message: dbResponse,
-		  })
+			})
 		: res.status(200).json({
 				message: "SignUp Successfully",
 				userId: dbResponse.id,
-		  });
+			});
 };
 
 export const userSignIn = async (req: Request, res: Response) => {
@@ -138,8 +133,8 @@ export const getUserDetails = async (req: Request, res: Response) => {
 	userStats.success
 		? res.status(200).json({
 				message: userStats.data,
-		  })
+			})
 		: res.status(404).json({
 				message: userStats.error.toString(),
-		  });
+			});
 };

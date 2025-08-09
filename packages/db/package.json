@@ -1,21 +1,25 @@
 {
-  "name": "db",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "build":"tsc -b",
-    "dev":"tsc -build && node ./dist/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.12.4",
-  "dependencies": {
-    "@prisma/client": "6.11.1",
-    "typescript": "^5.8.3"
-  },
-  "devDependencies": {
-    "prisma": "^6.11.1"
-  }
+	"name": "@repo/db",
+	"version": "1.0.0",
+	"description": "",
+	"main": "build/index.js",
+	"exports":{
+		".":"./build/index.js"
+	},
+	"scripts": {
+		"build": "tsc -b",
+		"dev": "tsc -build && node ./build/index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.12.4",
+	"dependencies": {
+		"@repo/typescript-config": "workspace:*",
+		"@prisma/client": "6.11.1",
+		"typescript": "^5.8.3"
+	},
+	"devDependencies": {
+		"prisma": "^6.11.1"
+	}
 }

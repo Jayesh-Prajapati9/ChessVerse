@@ -1,17 +1,19 @@
 {
-  "name": "http-backend",
+  "name": "@repo/api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "dev": "pnpm build && node ./dist/index.js"
+    "dev": "pnpm build && node ./build/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@repo/db": "workspace:*",
     "typescript": "^5.8.3"
   },
   "dependencies": {
