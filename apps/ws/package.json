@@ -1,0 +1,25 @@
+{
+	"name": "@repo/ws",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "tsc -b && node ./build/index.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.12.1",
+	"devDependencies": {
+		"@repo/db": "workspace:*",
+		"@repo/typescript-config": "workspace:*",
+		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/ws": "^8.18.1",
+		"chess.js": "^1.4.0",
+		"jsonwebtoken": "^9.0.2",
+		"ws": "^8.18.3"
+	}
+}

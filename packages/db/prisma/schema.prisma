@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model user {
+  id String @id @default(uuid())
+  username String
+  password String
+  email String @unique
+  avatar_Url String?
+  joined_Date DateTime
+  bio String?
+  gamesAsUser1 game[] @relation("User1Games")
+  gamesAsUser2 game[] @relation("User2Games")
+  playerstats player_stats[] 
+  achievement achievements[]
+}
+
+model game {
+  id  Int @id @default(autoincrement())
+  played_At DateTime
+  blackmoves String[]
+  whitemoves String[]
+  fen String
+  winnerId String?
+  
+  user1 String
+  user2 String 
+  
+  userAsUser1 user @relation("User1Games", fields: [user1], references: [id])
+  userAsUser2 user @relation("User2Games", fields: [user2], references: [id])
+  
+}
+
+model player_stats {
+  userId String @id
+  rating Int
+  games_won Int
+  games_draw Int
+  games_played Int
+  win_streak Int
+  win_rate Int
+  user user @relation(fields: [userId],references: [id])
+}
+
+model achievements {
+  id String @id @default(uuid())
+  user_id String
+  title String
+  description String
+  achieved_At DateTime
+  is_hidden Boolean
+  users user @relation(fields: [user_id],references: [id])
+}
