@@ -1,43 +1,12 @@
-import { prismaClient } from "../index.js";
-import { player_stats, user } from "@prisma/client";
+import { CreateUserPayload, QueryResult, User, UserPlayload, userStats, UserUpdatePayload } from "../types/types";
+import { prismaClient } from "..";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-
-interface UserUpdatePayload {
-	id: string;
-	data: string;
-	field: "bio" | "password" | "username" | "avatar_Url";
-}
-interface userStats {
-	userId: string;
-	field: {
-		rating: number;
-		games_won: number;
-		games_draw: number;
-		games_played: number;
-		win_streak: number;
-		win_rate: number;
-	};
-}
-interface CreateUserPayload {
-	username: string;
-	password: string;
-	email: string;
-}
-
-interface UserPlayload {
-	email: string;
-	password: string;
-}
-
-type QueryResult =
-	| { success: true; data: user | player_stats }
-	| { success: false; error: string | PrismaClientKnownRequestError | Error };
 
 export const createUser = async ({
 	username,
 	password,
 	email,
-}: CreateUserPayload): Promise<user | string> => {
+}: CreateUserPayload): Promise<User | string> => {
 	try {
 		const user = await prismaClient.user.create({
 			data: {
@@ -63,7 +32,7 @@ export const createUser = async ({
 
 export const getUserById = async (
 	id: string
-): Promise<user | string | unknown> => {
+): Promise<User | string | unknown> => {
 	try {
 		const user = await prismaClient.user.findUnique({
 			where: {
@@ -88,7 +57,7 @@ export const getUserById = async (
 export const getUserByEmail = async ({
 	email,
 	password,
-}: UserPlayload): Promise<user | string> => {
+}: UserPlayload): Promise<User | string> => {
 	try {
 		const user = await prismaClient.user.findUnique({
 			where: {
@@ -149,7 +118,7 @@ export const updateUserDetails = async ({
 	id,
 	data,
 	field,
-}: UserUpdatePayload): Promise<user | string | unknown> => {
+}: UserUpdatePayload): Promise<User | string | unknown> => {
 	try {
 		return await prismaClient.user.update({
 			where: {
