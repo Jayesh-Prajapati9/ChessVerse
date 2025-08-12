@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/dbQueries/gameQueries.ts","./src/dbQueries/userQueries.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/dbQueries/gameQueries.ts","./src/dbQueries/userQueries.ts","./src/types/types.ts"],"version":"5.8.3"}
