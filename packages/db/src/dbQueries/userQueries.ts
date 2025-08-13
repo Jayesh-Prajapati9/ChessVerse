@@ -1,4 +1,11 @@
-import { CreateUserPayload, QueryResult, User, UserPlayload, userStats, UserUpdatePayload } from "../types/types";
+import {
+	CreateUserPayload,
+	QueryResult,
+	User,
+	UserPlayload,
+	UpdateStatsPayload,
+	UpdateUserPayload,
+} from "../types/types";
 import { prismaClient } from "..";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -85,13 +92,16 @@ export const getUserStats = async (id: string): Promise<QueryResult> => {
 			where: {
 				userId: id,
 			},
+			include: {
+				user: true,
+			},
 		});
 		if (user) {
 			return { success: true, data: user };
 		} else {
 			return {
 				success: false,
-				error: "Cannot able to find the stats of the given id",
+				error: "No stats are available",
 			};
 		}
 	} catch (error) {
@@ -118,7 +128,7 @@ export const updateUserDetails = async ({
 	id,
 	data,
 	field,
-}: UserUpdatePayload): Promise<User | string | unknown> => {
+}: UpdateUserPayload): Promise<User | string | unknown> => {
 	try {
 		return await prismaClient.user.update({
 			where: {
@@ -143,7 +153,7 @@ export const updateUserDetails = async ({
 export const updateUserStats = async ({
 	userId,
 	field,
-}: userStats): Promise<string | unknown> => {
+}: UpdateStatsPayload): Promise<string | unknown> => {
 	try {
 		const updatedStats = await prismaClient.player_stats.update({
 			where: {

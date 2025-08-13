@@ -2,12 +2,12 @@ import { player_stats, user } from "@prisma/client";
 export type { player_stats as Player, user as User } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
-export interface UserUpdatePayload {
+export interface UpdateUserPayload {
     id: string;
     data: string;
     field: "bio" | "password" | "username" | "avatar_Url";
 }
-export interface userStats {
+export interface UpdateStatsPayload {
     userId: string;
     field: {
         rating: number;
