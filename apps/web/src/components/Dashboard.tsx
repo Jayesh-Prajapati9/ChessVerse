@@ -36,8 +36,8 @@ export const Dashboard = () => {
 	const text = isDark ? "text-white" : "text-[#18181b]";
 	const border = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const card = isDark
-		? "bg-[#232326]/30 backdrop-blur-lg border border-white/20 ring-1 ring-white/10 shadow-xl"
-		: "bg-white/40 backdrop-blur-lg border border-black/10 ring-1 ring-black/5 shadow-xl";
+		? "bg-gradient-to-br from-[#0f0f0f]/70 via-[#1a1a1a]/60 to-[#2a2a2a]/70 text-white backdrop-blur-md border border-white/10 shadow-lg"
+		: "bg-gradient-to-br from-white/40 via-white/20 to-white/30 text-black backdrop-blur-md border border-gray-300/30 shadow-lg";
 
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const cardText = isDark ? "text-white" : "text-[#18181b]";
@@ -113,7 +113,7 @@ export const Dashboard = () => {
 							<div className="grid md:grid-cols-2 gap-6">
 								<button
 									onClick={() => {
-										mode ? null : setMode("normal");
+										if (!mode) setMode("normal");
 										handleStartGame(mode);
 									}}
 									className={`${primaryBg} ${primaryFg} hover:bg-indigo-600 px-8 py-12 rounded-xl font-bold text-xl transition-all transform hover:scale-105 shadow-lg hover:cursor-pointer`}
@@ -146,7 +146,7 @@ export const Dashboard = () => {
 							<div className="grid md:grid-cols-3 gap-4">
 								<div
 									onClick={() => {
-										mode === "blitz" ? setMode(null) : setMode("blitz");
+										setMode(mode === "blitz" ? "normal" : "blitz");
 									}}
 									className={`text-center p-6 ${cardBorder} border rounded-lg transition-all cursor-pointer group ${
 										mode === "blitz" ? `${borderSelection}` : null
@@ -163,7 +163,7 @@ export const Dashboard = () => {
 								</div>
 								<div
 									onClick={() => {
-										mode === "rapid" ? setMode(null) : setMode("rapid");
+										setMode(mode === "rapid" ? null : "rapid");
 									}}
 									className={`text-center p-6 ${cardBorder} border rounded-lg transition-all cursor-pointer group transform hover:scale-108 ${
 										mode === "rapid" ? `${borderSelection}` : null
@@ -180,7 +180,7 @@ export const Dashboard = () => {
 								</div>
 								<div
 									onClick={() => {
-										mode === "normal" ? setMode(null) : setMode("normal");
+										setMode(mode === "normal" ? null : "normal");
 									}}
 									className={`text-center p-6 ${cardBorder} border rounded-lg transition-all cursor-pointer group transform hover:scale-108 ${
 										mode === "normal" ? `${borderSelection}` : null

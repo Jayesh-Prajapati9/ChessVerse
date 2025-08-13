@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Crown, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
-import { showToast } from "./ui/Toast";
+import { showToast } from "@repo/ui/Toast";
 import { useTheme } from "../hooks/useTheme";
 
 export const SignIn = () => {

@@ -1,47 +1,48 @@
 import { Chess, type Square } from "chess.js";
 import { useEffect } from "react";
-import { type FC } from "react";
-import type { ChessGameProps } from "../types/ChessType";
+import { useChessGame } from "../hooks/useChessGame";
+import { showToast } from "@repo/ui/Toast";
 
-export const ChessBoard: FC<ChessGameProps> = ({
-	socketRef,
-	chessRef,
-	selectedPiece,
-	setSelectedPiece,
-	validMove,
-	setValidMove,
-	board,
-	setBoard,
-	blackCaptured,
-	setBlackCaptured,
-	whiteCaptured,
-	setWhiteCaptured,
-	kingSquare,
-	setKingSquare,
-	canAttack,
-	setCanAttack,
-	roomId,
-	setRoomId,
-	gameStarted,
-	setGameStarted,
-	playerColor,
-	setPlayerColor,
-	setWhiteTimer,
-	setBlackTimer,
-	isCheckMate,
-	setIsCheckMate,
-	gameResult,
-	setGameResult,
-	setMode,
-	isSearchingGame,
-	setIsSearchingGame,
-	wsConnected,
-	setWsConnected,
-	isDark,
-	setIsDark,
-	location,
-	setTotalMove,
-}) => {
+export const ChessBoard = () => {
+	const {
+		socketRef,
+		chessRef,
+		selectedPiece,
+		setSelectedPiece,
+		validMove,
+		setValidMove,
+		board,
+		setBoard,
+		blackCaptured,
+		setBlackCaptured,
+		whiteCaptured,
+		setWhiteCaptured,
+		kingSquare,
+		setKingSquare,
+		canAttack,
+		setCanAttack,
+		roomId,
+		setRoomId,
+		gameStarted,
+		setGameStarted,
+		playerColor,
+		setPlayerColor,
+		setWhiteTimer,
+		setBlackTimer,
+		isCheckMate,
+		setIsCheckMate,
+		gameResult,
+		setGameResult,
+		setMode,
+		isSearchingGame,
+		setIsSearchingGame,
+		wsConnected,
+		setWsConnected,
+		isDark,
+		setIsDark,
+		location,
+		setTotalMove,
+	} = useChessGame();
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const primaryBg = "bg-[#4c4fef]";
@@ -115,11 +116,13 @@ export const ChessBoard: FC<ChessGameProps> = ({
 					? chessRef.current.inCheck()
 						? setKingSquare(
 								chessRef.current.findPiece({ type: "k", color: "w" })
-						  )
+							)
 						: setKingSquare(null)
 					: chessRef.current.inCheck()
-					? setKingSquare(chessRef.current.findPiece({ type: "k", color: "b" }))
-					: setKingSquare(null);
+						? setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "b" })
+							)
+						: setKingSquare(null);
 			}
 
 			if (msg.type === "game_over") {
@@ -194,6 +197,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 				piece.color !== playerColor ||
 				chessRef.current.turn() !== playerColor
 			) {
+				showToast("Not your Turn", "warning", isDark);
 				console.log("⛔ Not your turn!");
 				return;
 			}
@@ -230,6 +234,7 @@ export const ChessBoard: FC<ChessGameProps> = ({
 			if (!piece || piece.color !== playerColor) return;
 
 			if (chessRef.current.turn() !== playerColor) {
+				showToast("Not your Turn", "warning", isDark);
 				console.log("⛔ Not your turn!");
 				return;
 			}
@@ -271,10 +276,10 @@ export const ChessBoard: FC<ChessGameProps> = ({
 									isSelected && kingSquare?.[0] === selectedSquare
 										? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1),inset_0_0_0_3px_rgba(239,68,68,1)]"
 										: isSelected
-										? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1)]"
-										: kingSquare?.[0] === selectedSquare
-										? "shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
-										: null;
+											? "shadow-[inset_0_0_0_3px_rgba(59,130,246,1)]"
+											: kingSquare?.[0] === selectedSquare
+												? "shadow-[inset_0_0_0_3px_rgba(239,68,68,1)]"
+												: null;
 
 								return (
 									<div

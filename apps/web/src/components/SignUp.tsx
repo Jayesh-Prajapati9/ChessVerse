@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Crown, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
-import { showToast } from "./ui/Toast";
+import { showToast } from "@repo/ui/Toast";
 import { useTheme } from "../hooks/useTheme";
 
 export const SignUp = () => {
@@ -29,7 +29,11 @@ export const SignUp = () => {
 		e.preventDefault();
 
 		if (formData.password !== formData.confirmPassword) {
-			alert("Passwords do not match!");
+			showToast(
+						"Password doesn't match",
+						"error",
+						isDark
+					);
 			return;
 		}
 

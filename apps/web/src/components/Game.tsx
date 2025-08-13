@@ -205,7 +205,7 @@ const Game = () => {
 							{/* Chess Board */}
 							<div className="relative my-6">
 								<div className="aspect-square w-full max-w-[90vw] sm:max-w-[670px] mx-auto border-4 border-gray-700 rounded-xl overflow-hidden">
-									<ChessBoard {...game} />
+									<ChessBoard/>
 								</div>
 							</div>
 
