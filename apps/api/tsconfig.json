@@ -1,7 +1,12 @@
 {
-	"extends":"@repo/typescript-config/base.json",
+	"extends": "@repo/typescript-config/base.json",
 	"compilerOptions": {
 		"outDir": "./build",
 		"rootDir": "./src",
-	}
+		"typeRoots": [
+			"./src/types/express", // your custom augmentation folder
+			"./node_modules/@types" // keep default type packages
+		]
+	},
+	"include": ["src"]
 }
