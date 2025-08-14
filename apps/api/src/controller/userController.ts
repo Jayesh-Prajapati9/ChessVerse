@@ -1,8 +1,18 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { prismaClient } from "@repo/db";
-import { createUser, getUserStats, getUserByEmail } from "@repo/db";
+import {
+	createUser,
+	getUserStats,
+	getUserByEmail,
+	getUserById,
+	prismaClient,
+} from "@repo/db";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "JWT";
 
 export const userSignUp = async (req: Request, res: Response) => {
 	const name = req.body.name;
@@ -39,8 +49,6 @@ export const userSignIn = async (req: Request, res: Response) => {
 		.update(password)
 		.digest("hex");
 
-	const JWT_SECRET = process.env.JWT_SECRET || "JSON_WEB_TOKEN";
-
 	const user = await getUserByEmail({ email, password: hashPassword });
 
 	if (typeof user === "string") {
@@ -52,10 +60,9 @@ export const userSignIn = async (req: Request, res: Response) => {
 	const token = jwt.sign({ userId }, JWT_SECRET);
 
 	res.cookie("token", token, {
-		httpOnly: true, //  can't access via JavaScript
-		secure: true, // only over HTTPS
-		sameSite: "none", //  protects from CSRF (or use 'Strict')
-		// maxAge:  15* 60 * 1000, // 15 minutes
+		httpOnly: true,
+		secure: true,
+		sameSite: "strict",
 	});
 
 	res.status(200).json({
@@ -65,12 +72,19 @@ export const userSignIn = async (req: Request, res: Response) => {
 };
 
 export const getProfile = async (req: Request, res: Response) => {
-	const userId = req.params.userId;
-	const userDetails = await prismaClient.user.findUnique({
-		where: {
-			id: userId,
-		},
-	});
+	const token = req.cookies.token;
+	console.log("token", token);
+
+	const verified = jwt.verify(token, "JSON_WEB_TOKEN");
+
+	if (typeof verified === "string") {
+		res.status(401).json({
+			message: "Invalid Token",
+		});
+		return;
+	}
+
+	const userDetails = await getUserById(verified.userId);
 
 	if (!userDetails) {
 		res.status(401).json({
@@ -120,7 +134,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 };
 
 export const getUserDetails = async (req: Request, res: Response) => {
-	const userId = req.body.userId;
+	const userId = (req as any).userId;
 	if (!userId) {
 		res.status(401).json({
 			message: "User Id is empty",

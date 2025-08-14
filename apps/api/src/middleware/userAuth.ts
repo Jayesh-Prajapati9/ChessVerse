@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "JWT";
 
 export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 	const token = req.cookies.token;
-
-	const JWT_SECRET = process.env.JWT_SECRET || "";
-
 	const decoded = jwt.verify(token, JWT_SECRET);
 
 	if (!decoded || typeof decoded !== "object") {
@@ -15,6 +17,7 @@ export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 		return;
 	}
 
-	req.body.userId = decoded.userId;
+	// can't load the types.d.ts
+	(req as any).userId = decoded.userId;
 	next();
 };

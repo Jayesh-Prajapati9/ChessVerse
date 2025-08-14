@@ -1,19 +1,25 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { userRoutes } from "./routes/userRoutes";
 import { gameRoutes } from "./routes/gameRoutes";
+import dotenv from "dotenv"
+
+dotenv.config();
 const app = express();
 
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
+const FRONTEND_URL = process.env.FRONTEND_URL
 
 app.use(
 	cors({
-		origin: "http://localhost:5173", // Replace with your frontend URL
+		origin: FRONTEND_URL,
 		credentials: true,
 	})
 );
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/v1/user',userRoutes)
 app.use('/api/v1/game',gameRoutes)
