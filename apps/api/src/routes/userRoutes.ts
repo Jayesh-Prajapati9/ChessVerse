@@ -12,8 +12,8 @@ const router = express.Router();
 
 router.post("/signup", userSignUp);
 router.post("/signin", userSignIn);
-router.get("/dashboard/:userId", userAuth, getUserDetails);
-router.get("/profile/:userId", userAuth, getProfile);
-router.post("/profile/:userId/update", userAuth, updateProfile);
+router.get("/dashboard", userAuth, getUserDetails);
+router.get("/profile", userAuth, getProfile);
+router.post("/profile/update", userAuth, updateProfile);
 
 export const userRoutes: Router = router;
