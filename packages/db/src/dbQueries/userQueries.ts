@@ -8,6 +8,7 @@ import {
 } from "../types/types";
 import { prismaClient } from "..";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 
 export const createUser = async ({
 	username,
@@ -26,74 +27,35 @@ export const createUser = async ({
 		if (user) {
 			return user;
 		} else {
-			return "Error While creating the user in DB";
+			return "Error while registering the user in DataBase";
 		}
 	} catch (error) {
-		if (error instanceof PrismaClientKnownRequestError) {
-			return error.message;
+		if (
+			error instanceof PrismaClientKnownRequestError &&
+			error.code === "P2002"
+		) {
+			return "Email is already register with the account";
 		} else {
 			return "Error";
 		}
 	}
 };
 
-export const getUserById = async (
-	id: string
-): Promise<User | string | unknown> => {
+export const getUserDetails = async (
+	id: string | null,
+	email: string | null,
+	password: string | null
+): Promise<QueryResult> => {
 	try {
-		const user = await prismaClient.user.findUnique({
+		const user = await prismaClient.user.findFirst({
 			where: {
-				id: id,
-			},
-		});
-
-		if (user) {
-			return user;
-		} else {
-			return "No such user found";
-		}
-	} catch (error) {
-		if (error instanceof PrismaClientKnownRequestError) {
-			return error.message;
-		} else {
-			return error;
-		}
-	}
-};
-
-export const getUserByEmail = async ({
-	email,
-	password,
-}: UserPlayload): Promise<User | string> => {
-	try {
-		const user = await prismaClient.user.findUnique({
-			where: {
-				email: email,
-				password: password,
-			},
-		});
-		if (user) {
-			return user;
-		} else {
-			return "No such user found";
-		}
-	} catch (error) {
-		if (error instanceof PrismaClientKnownRequestError) {
-			return error.message;
-		} else {
-			return "Error";
-		}
-	}
-};
-
-export const getUserStats = async (id: string): Promise<QueryResult> => {
-	try {
-		const user = await prismaClient.player_stats.findUnique({
-			where: {
-				userId: id,
+				OR: [
+					id ? { id } : undefined,
+					email && password ? { email, password } : undefined,
+				].filter(Boolean) as Prisma.userWhereInput[],
 			},
 			include: {
-				user: true,
+				playerstats: true,
 			},
 		});
 		if (user) {
