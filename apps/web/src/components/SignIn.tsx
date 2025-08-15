@@ -12,23 +12,23 @@ export const SignIn = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 	const { isDark } = useTheme();
+	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
 			const axiosResponse = await axios.post(
-				"http://localhost:8080/api/v1/user/signin",
+				`${BACKEND_URL}/user/signin`,
 				{
 					email: email,
 					password: password,
-				}
+				},
+				{ withCredentials: true } // This helps BE to store cookies and other information
 			);
 			console.log(axiosResponse);
 
 			if (axiosResponse.status === 200) {
-				const token = axiosResponse.data.token;
-				localStorage.setItem("token", token);
 				navigate("/dashboard");
 			}
 			setIsLoading(false);

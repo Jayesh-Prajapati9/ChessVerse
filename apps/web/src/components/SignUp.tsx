@@ -17,6 +17,7 @@ export const SignUp = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 	const { isDark } = useTheme();
+	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({
@@ -29,23 +30,20 @@ export const SignUp = () => {
 		e.preventDefault();
 
 		if (formData.password !== formData.confirmPassword) {
-			showToast(
-						"Password doesn't match",
-						"error",
-						isDark
-					);
+			showToast("Password doesn't match", "error", isDark);
 			return;
 		}
 
 		setIsLoading(true);
 		try {
 			const axiosRequest = await axios.post(
-				"http://localhost:8080/api/v1/user/signup",
+				`${BACKEND_URL}/user/signup`,
 				{
 					name: formData.name,
 					email: formData.email,
 					password: formData.password,
-				}
+				},
+				{ withCredentials: true }
 			);
 			if (axiosRequest.status === 200) {
 				navigate("/dashboard");
@@ -53,14 +51,21 @@ export const SignUp = () => {
 			setIsLoading(false);
 		} catch (error) {
 			if (error instanceof AxiosError) {
-				if (error.status === 401) {
+				if (error.status === 406) {
+					console.log(error);
+
 					showToast(
 						error.response?.data.message || "Login Error",
 						"error",
 						isDark
 					);
 					setIsLoading(false);
+				} else {
+					console.log(error.status);
 				}
+			} else {
+				showToast("Please try after sometime", "error", isDark);
+				setIsLoading(false);
 			}
 		}
 	};
