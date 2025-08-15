@@ -1,20 +1,14 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import {
-	createUser,
-	getUserStats,
-	getUserByEmail,
-	getUserById,
-	prismaClient,
-} from "@repo/db";
+import { createUser, getUserDetails, prismaClient } from "@repo/db";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "JWT";
 
-export const userSignUp = async (req: Request, res: Response) => {
+export const SignUp = async (req: Request, res: Response) => {
 	const name = req.body.name;
 	const email = req.body.email;
 	const password = req.body.password;
@@ -30,39 +24,66 @@ export const userSignUp = async (req: Request, res: Response) => {
 		email: email,
 	});
 
-	typeof dbResponse === "string"
-		? res.status(401).json({
-				message: dbResponse,
-			})
-		: res.status(200).json({
-				message: "SignUp Successfully",
-				userId: dbResponse.id,
-			});
+	if (typeof dbResponse === "string") {
+		res.status(406).json({
+			message: dbResponse,
+		});
+		return;
+	}
+
+	const userId = dbResponse.id;
+	const token = jwt.sign({ userId }, JWT_SECRET);
+
+	res.cookie("token", token, {
+		httpOnly: true,
+		secure: false, // In production use true and sameSite : strict
+		sameSite: "lax",
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+	});
+
+	res.status(200).json({
+		message: "SignUp Successfully",
+		userId: userId,
+	});
 };
 
-export const userSignIn = async (req: Request, res: Response) => {
+export const SignIn = async (req: Request, res: Response) => {
+	const cookie = req.cookies.token;
 	const email = req.body.email;
 	const password = req.body.password;
+
+	if (cookie) {
+		const verified = jwt.verify(cookie, JWT_SECRET);
+
+		if (typeof verified !== "string") {
+			const loggedInUser = await getUserDetails(verified.id, null, null);
+			res.status(200).json({
+				message: "Already logged In",
+			});
+		}
+	}
 
 	const hashPassword = crypto
 		.createHash("sha256")
 		.update(password)
 		.digest("hex");
 
-	const user = await getUserByEmail({ email, password: hashPassword });
+	const user = await getUserDetails(null, email, hashPassword);
 
 	if (typeof user === "string") {
-		res.status(401).json({ message: "Invalid Email or Password" });
+		res.status(404).json({ message: "Invalid Email or Password" });
 		return;
 	}
-	const userId = user.id;
+	const userId = user;
 
 	const token = jwt.sign({ userId }, JWT_SECRET);
 
+	console.log(token);
+
 	res.cookie("token", token, {
 		httpOnly: true,
-		secure: true,
-		sameSite: "strict",
+		secure: false,
+		sameSite: "lax",
 	});
 
 	res.status(200).json({
@@ -72,19 +93,8 @@ export const userSignIn = async (req: Request, res: Response) => {
 };
 
 export const getProfile = async (req: Request, res: Response) => {
-	const token = req.cookies.token;
-	console.log("token", token);
-
-	const verified = jwt.verify(token, "JSON_WEB_TOKEN");
-
-	if (typeof verified === "string") {
-		res.status(401).json({
-			message: "Invalid Token",
-		});
-		return;
-	}
-
-	const userDetails = await getUserById(verified.userId);
+	const userId = (req as any).userId;
+	const userDetails = await getUserDetails(userId, null, null);
 
 	if (!userDetails) {
 		res.status(401).json({
@@ -115,14 +125,14 @@ export const updateProfile = async (req: Request, res: Response) => {
 	const updatedUser = await prismaClient.user.update({
 		where: {
 			id: userId,
-			password: oldPassword,
+			password: hashOldPassword,
 		},
 		data: {
-			password: newPassword,
+			password: hashNewPassword,
 		},
 	});
 
-	if (!updateProfile) {
+	if (!updatedUser) {
 		res.status(401).json({
 			message: "Invalid Password",
 		});
@@ -133,16 +143,18 @@ export const updateProfile = async (req: Request, res: Response) => {
 	});
 };
 
-export const getUserDetails = async (req: Request, res: Response) => {
+export const getStats = async (req: Request, res: Response) => {
 	const userId = (req as any).userId;
 	if (!userId) {
+		console.log("controller ", userId);
 		res.status(401).json({
 			message: "User Id is empty",
 		});
 		return;
 	}
 
-	const userStats = await getUserStats(userId);
+	const userStats = await getUserDetails(userId, null, null);
+	console.log("userStats", userStats);
 
 	userStats.success
 		? res.status(200).json({

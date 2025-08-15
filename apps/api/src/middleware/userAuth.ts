@@ -8,6 +8,13 @@ const JWT_SECRET = process.env.JWT_SECRET || "JWT";
 
 export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 	const token = req.cookies.token;
+	if (!token) {
+		res.status(401).json({
+			messgae: "Token Not Found",
+		});
+		return;
+	}
+
 	const decoded = jwt.verify(token, JWT_SECRET);
 
 	if (!decoded || typeof decoded !== "object") {
