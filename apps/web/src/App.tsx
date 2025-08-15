@@ -7,6 +7,8 @@ import { SignIn } from "./components/SignIn";
 import { Dashboard } from "./components/Dashboard";
 import Game from "./components/Game";
 import { ToastContainer } from "react-toastify";
+import Auth from "./components/Auth";
+import { UserProvider } from "./hooks/userContext";
 
 function App() {
 	return (
@@ -18,19 +20,21 @@ function App() {
 				closeOnClick
 				draggable
 				pauseOnHover
-				theme="auto" 
+				theme="auto"
 			/>
-
-			<BrowserRouter>
-				<Routes>
-					<Route path="/" element={<LandingPage />} />
-					<Route path="/signup" element={<SignUp />} />
-					<Route path="/login" element={<SignIn />} />
-					<Route path="/dashboard" element={<Dashboard />} />
-					<Route path="/game" element={<Game />}></Route>
-					<Route path="*" element={<NotFound />} />
-				</Routes>
-			</BrowserRouter>
+			<UserProvider>
+				<BrowserRouter>
+				<Auth />
+					<Routes>
+						<Route path="/" element={<LandingPage />} />
+						<Route path="/signup" element={<SignUp />} />
+						<Route path="/login" element={<SignIn />} />
+						<Route path="/dashboard" element={<Dashboard />} />
+						<Route path="/game" element={<Game />}></Route>
+						<Route path="*" element={<NotFound />} />
+					</Routes>
+				</BrowserRouter>
+			</UserProvider>
 		</>
 	);
 }
