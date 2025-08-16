@@ -1,43 +1,34 @@
-import axios, { AxiosError } from "axios";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "../hooks/useUser";
+import axios from "axios";
+import {redirect} from "react-router-dom"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const Auth = () => {
-	const { setUser, user } = useUser();
-	const navigate = useNavigate();
-	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-	useEffect(() => {
-		console.log("1st user",user?.username); // ✅ This runs after re-render, will show new value
-	}, [user]);
-	useEffect(() => {
-		const checkAuth = async () => {
-			try {
-				const response = await axios.get(`${BACKEND_URL}/user/auth/check`, {
-					withCredentials: true,
-				});
+export const requireAuth = async () => {
+	try {
+		const response = await axios.get(`${BACKEND_URL}/user/auth/check`, {
+			withCredentials: true,
+		});
 
-				if (response.status === 200) {
-					const { data } = response;
-					setUser(prev => prev ?? data.message);
-					console.log("User", data.message.playerstats[0]);
-					console.log("User Context", user?.id);
-					navigate("/dashboard");
-				}
-			} catch (error) {
-				if (
-					error instanceof AxiosError &&
-					(error.status === 404 || error.status === 401)
-				) {
-					navigate("/");
-				}
-			}
-		};
-
-		checkAuth();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-	return null;
+		if (response.status === 200) {
+			return response.data.message;
+		}
+	} catch (error) {
+		console.log(error);
+		throw redirect("/login");
+	}
 };
 
-export default Auth;
+export const redirectIfAuthed = async () => {
+	try {
+		const response = await axios.get(`${BACKEND_URL}/user/auth/check`, {
+			withCredentials: true,
+		});
+
+		if (response.status === 200) {
+			console.log("inside response");
+			return redirect('/dashboard');
+		}
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
+};

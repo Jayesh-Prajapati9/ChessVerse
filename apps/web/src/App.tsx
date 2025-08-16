@@ -1,14 +1,8 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import { NotFound } from "./pages/NotFound";
-import { SignUp } from "./components/SignUp";
-import { SignIn } from "./components/SignIn";
-import { Dashboard } from "./components/Dashboard";
-import Game from "./components/Game";
+import { RouterProvider } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import Auth from "./components/Auth";
-import { UserProvider } from "./hooks/userContext";
+import { UserProvider } from "./providers/userContext";
+import { Router } from "./router/router";
 
 function App() {
 	return (
@@ -23,17 +17,7 @@ function App() {
 				theme="auto"
 			/>
 			<UserProvider>
-				<BrowserRouter>
-				<Auth />
-					<Routes>
-						<Route path="/" element={<LandingPage />} />
-						<Route path="/signup" element={<SignUp />} />
-						<Route path="/login" element={<SignIn />} />
-						<Route path="/dashboard" element={<Dashboard />} />
-						<Route path="/game" element={<Game />}></Route>
-						<Route path="*" element={<NotFound />} />
-					</Routes>
-				</BrowserRouter>
+				<RouterProvider router={Router} />
 			</UserProvider>
 		</>
 	);
