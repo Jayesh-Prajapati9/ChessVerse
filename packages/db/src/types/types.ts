@@ -25,10 +25,22 @@ export interface CreateUserPayload {
 }
 
 export interface UserPlayload {
-    email: string;
+	email: string;
     password: string;
 }
 
 export type QueryResult =
     | { success: true; data: user | player_stats }
     | { success: false; error: string | PrismaClientKnownRequestError | Error };
+
+export interface GameInput {
+	user1: string;
+  	user2: string;
+  	winnerId?: string | null;
+  	fen: string;
+  	whitemoves: string[];
+  	blackmoves: string[];
+	mode:string
+};
+
+export type { game } from "@prisma/client";
