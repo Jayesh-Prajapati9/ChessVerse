@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
+import { useUser } from "../hooks/useUser";
 
 type GameMode = "normal" | "blitz" | "rapid" | "bullet" | "ai" | null;
 
@@ -23,6 +24,7 @@ export const Dashboard = () => {
 	const { isDark, toggleTheme } = useTheme();
 	const [mode, setMode] = useState<GameMode>("normal");
 	const navigate = useNavigate();
+	const { user } = useUser();
 
 	const handleStartGame = (mode: GameMode) => {
 		navigate("/game", {
@@ -86,8 +88,8 @@ export const Dashboard = () => {
 						</button>
 						{/* Profile */}
 						<div className="flex items-center space-x-3">
-							<span className={`${primary} font-bold`}>J</span>
-							<span className="font-medium">John Doe</span>
+							<span className={`${primary} font-bold`}>{user?.username[0] }</span>
+							<span className="font-medium">{user?.username}</span>
 						</div>
 					</div>
 				</div>
@@ -96,7 +98,7 @@ export const Dashboard = () => {
 			<div className="max-w-7xl mx-auto px-6 py-8">
 				{/* Welcome Section */}
 				<div className="mb-8">
-					<h1 className="text-4xl font-bold mb-2">Welcome back, John!</h1>
+					<h1 className="text-4xl font-bold mb-2">Welcome back, { user?.username}!</h1>
 					<p className={`${mutedText} text-lg`}>
 						Ready for your next chess challenge?
 					</p>
@@ -244,19 +246,19 @@ export const Dashboard = () => {
 									className={`flex justify-between items-center p-3 ${muted} rounded-lg `}
 								>
 									<span className={mutedText}>Current Rating</span>
-									<span className={`text-2xl font-bold ${primary}`}>1562</span>
+									<span className={`text-2xl font-bold ${primary}`}>{ user?.playerstats[0].rating }</span>
 								</div>
 								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Games Played</span>
-									<span className="font-bold">247</span>
+									<span className="font-bold">{ user?.playerstats[0].games_played }</span>
 								</div>
 								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Win Rate</span>
-									<span className="font-bold text-green-500">68%</span>
+									<span className="font-bold text-green-500">{ user?.playerstats[0].win_rate }</span>
 								</div>
 								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Best Streak</span>
-									<span className="font-bold">12 wins</span>
+									<span className="font-bold">{ user?.playerstats[0].win_streak }</span>
 								</div>
 								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Avg Accuracy</span>
