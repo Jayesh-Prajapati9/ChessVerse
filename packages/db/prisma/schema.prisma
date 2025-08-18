@@ -35,6 +35,7 @@ model game {
   whitemoves String[]
   fen String
   winnerId String?
+  mode String
   
   user1 String
   user2 String 
