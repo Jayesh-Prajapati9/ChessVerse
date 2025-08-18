@@ -16,7 +16,7 @@ function getPieces(type: string, color: string) {
 	return color === "w" ? pieces[type][0] : pieces[type][1];
 }
 
-const Game = () => {
+export const Game = () => {
 	const game = useChessGame();
 	const isDark = game.isDark;
 	const toggleTheme = game.toggleTheme;
@@ -417,5 +417,3 @@ const Game = () => {
 		</div>
 	);
 };
-
-export default Game;

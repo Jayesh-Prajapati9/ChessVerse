@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 
-const LandingPage = () => {
+export const LandingPage = () => {
 	const { isDark, toggleTheme } = useTheme();
 
 	return (
@@ -446,5 +446,3 @@ const LandingPage = () => {
 		</div>
 	);
 };
-
-export default LandingPage;

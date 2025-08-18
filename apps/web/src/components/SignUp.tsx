@@ -62,6 +62,7 @@ export const SignUp = () => {
 					setIsLoading(false);
 				} else {
 					console.log(error.status);
+					setIsLoading(false);
 				}
 			} else {
 				showToast("Please try after sometime", "error", isDark);

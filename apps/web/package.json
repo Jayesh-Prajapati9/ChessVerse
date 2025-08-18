@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@repo/ui":"workspace:*",
+    "@repo/ui": "workspace:*",
+    "@repo/db": "workspace:*",
     "@tailwindcss/vite": "^4.1.10",
     "@types/ws": "^8.18.1",
     "axios": "^1.10.0",
     "chess.js": "^1.4.0",
+    "dotenv": "^17.2.1",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
