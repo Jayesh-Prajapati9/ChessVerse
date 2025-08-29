@@ -70,7 +70,7 @@ export const SignIn = async (req: Request, res: Response) => {
 
 	const user = await getUserDetails(null, email, hashPassword);
 
-	if (typeof user === "string") {
+	if (!user.success) {
 		res.status(404).json({ message: "Invalid Email or Password" });
 		return;
 	}
@@ -145,6 +145,8 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const getStats = async (req: Request, res: Response) => {
 	const userId = (req as any).userId;
+	console.log("controller of getDetails -- ", userId);
+	console.log("controller end of getDetails -- ");
 	if (!userId) {
 		console.log("controller ", userId);
 		res.status(401).json({

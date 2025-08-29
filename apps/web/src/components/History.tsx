@@ -223,7 +223,7 @@ export const History = () => {
 										<div className={`text-sm ${mutedText}`}>Accuracy</div>
 									</div>
 
-									<div className="col-span-12 md:col-span-3 md:justify-self-end">
+									{/* <div className="col-span-12 md:col-span-3 md:justify-self-end">
 										<button
 											onClick={() => handleViewAnalysis(game.id)}
 											className={`flex items-center gap-2 px-4 py-2 rounded-lg ${primaryBg} ${primaryFg} hover:opacity-90 transition`}
@@ -231,7 +231,7 @@ export const History = () => {
 											<Eye className="h-4 w-4" />
 											<span>View Analysis</span>
 										</button>
-									</div>
+									</div> */}
 								</div>
 							))
 						) : (

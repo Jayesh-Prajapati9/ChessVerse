@@ -23,6 +23,12 @@ importers:
       '@google/genai':
         specifier: ^1.10.0
         version: 1.13.0
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
+      '@types/cookie-parser':
+        specifier: ^1.4.9
+        version: 1.4.9(@types/express@5.0.3)
       '@types/cors':
         specifier: ^2.8.19
         version: 2.8.19
@@ -35,9 +41,15 @@ importers:
       chess.js:
         specifier: ^1.4.0
         version: 1.4.0
+      cookie-parser:
+        specifier: ^1.4.7
+        version: 1.4.7
       cors:
         specifier: ^2.8.5
         version: 2.8.5
+      dotenv:
+        specifier: ^17.2.1
+        version: 17.2.1
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -66,6 +78,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@repo/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tailwindcss/vite':
         specifier: ^4.1.10
         version: 4.1.11(vite@6.3.5(@types/node@22.15.3)(jiti@2.5.1)(lightningcss@1.30.1))
@@ -78,6 +96,9 @@ importers:
       chess.js:
         specifier: ^1.4.0
         version: 1.4.0
+      dotenv:
+        specifier: ^17.2.1
+        version: 17.2.1
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@19.1.0)
@@ -90,6 +111,9 @@ importers:
       react-router-dom:
         specifier: ^7.6.3
         version: 7.8.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react-toastify:
+        specifier: ^11.0.5
+        version: 11.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       tailwindcss:
         specifier: ^4.1.10
         version: 4.1.11
@@ -240,6 +264,9 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0(jiti@2.5.1)
+      react-toastify:
+        specifier: ^11.0.5
+        version: 11.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       typescript:
         specifier: 5.8.2
         version: 5.8.2
@@ -535,6 +562,10 @@ packages:
     peerDependenciesMeta:
       '@modelcontextprotocol/sdk':
         optional: true
+
+  '@google/generative-ai@0.24.1':
+    resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
+    engines: {node: '>=18.0.0'}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -832,6 +863,11 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
+  '@types/cookie-parser@1.4.9':
+    resolution: {integrity: sha512-tGZiZ2Gtc4m3wIdLkZ8mkj1T6CEHb35+VApbL2T14Dew8HA7c+04dmKqsKRNC+8RJPm16JEK0tFSwdZqubfc4g==}
+    peerDependencies:
+      '@types/express': '*'
+
   '@types/cors@2.8.19':
     resolution: {integrity: sha512-mFNylyeyqN93lfe/9CSxOGREz8cpzAhH+E93xJ4xWQf62V8sQ/24reV2nyzUWM6H6Xji+GGHpkbLe7pVoUEskg==}
 
@@ -983,6 +1019,7 @@ packages:
   acorn@8.15.0:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
+    hasBin: true
 
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
@@ -1124,6 +1161,10 @@ packages:
   citty@0.1.6:
     resolution: {integrity: sha512-tskPPKEs8D2KPafUypv2gxwJP8h/OaJmC82QQGGDQcHvXX43xF2VDACcJVmZ0EuSxkpO9Kc4MlrA3q0+FG58AQ==}
 
+  clsx@2.1.1:
+    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
+    engines: {node: '>=6'}
+
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
     engines: {node: '>=7.0.0'}
@@ -1155,6 +1196,13 @@ packages:
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
+
+  cookie-parser@1.4.7:
+    resolution: {integrity: sha512-nGUvgXnotP3BsjiLX2ypbQnWoGUPIIfHQNZkkC668ntrzGWEZVW70HDEB1qnNGMicPje6EttlIgzo51YSwNQGw==}
+    engines: {node: '>= 0.8.0'}
+
+  cookie-signature@1.0.6:
+    resolution: {integrity: sha512-QADzlaHc8icV8I7vbaJXJwod9HWYp8uCqf1xa4OfNu1T7JVxQIrUgOWtHdNDtPiywmFbiS12VjotIXLrKM3orQ==}
 
   cookie-signature@1.2.2:
     resolution: {integrity: sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==}
@@ -1243,6 +1291,10 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.2.1:
+    resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
     engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
@@ -1792,6 +1844,7 @@ packages:
 
   js-yaml@4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+    hasBin: true
 
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -1936,6 +1989,7 @@ packages:
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
+    hasBin: true
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -2179,6 +2233,7 @@ packages:
   prettier@3.6.2:
     resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
     engines: {node: '>=14'}
+    hasBin: true
 
   prisma@6.13.0:
     resolution: {integrity: sha512-dfzORf0AbcEyyzxuv2lEwG8g+WRGF/qDQTpHf/6JoHsyF5MyzCEZwClVaEmw3WXcobgadosOboKUgQU0kFs9kw==}
@@ -2254,6 +2309,12 @@ packages:
       react-dom:
         optional: true
 
+  react-toastify@11.0.5:
+    resolution: {integrity: sha512-EpqHBGvnSTtHYhCPLxML05NLY2ZX0JURbAdNYa6BUkk+amz4wbKBQvoKQAB0ardvSarUBuY4Q4s1sluAzZwkmA==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+
   react@19.1.0:
     resolution: {integrity: sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==}
     engines: {node: '>=0.10.0'}
@@ -2284,6 +2345,7 @@ packages:
 
   resolve@2.0.0-next.5:
     resolution: {integrity: sha512-U7WjGVG9sH8tvjW5SmGbQuui75FiyjAX72HX15DwBBwF9dNiQZRQAg9nnPhYy+TUnE0+VcrttuvNI8oSxZcocA==}
+    hasBin: true
 
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
@@ -2324,10 +2386,12 @@ packages:
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
+    hasBin: true
 
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
+    hasBin: true
 
   send@1.2.0:
     resolution: {integrity: sha512-uaW0WwXKpL9blXE2o0bRhoL2EGXIrZxQ2ZQ4mgcfoBxdFmQold+qWsD2jLrfZ0trjKL6vOw0j//eAwcALFjKSw==}
@@ -2545,10 +2609,12 @@ packages:
   typescript@5.8.2:
     resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
     engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
+    hasBin: true
 
   unbox-primitive@1.1.0:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
@@ -2657,6 +2723,7 @@ packages:
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
+    hasBin: true
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -2942,6 +3009,8 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@google/generative-ai@0.24.1': {}
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -3188,6 +3257,10 @@ snapshots:
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 22.15.3
+
+  '@types/cookie-parser@1.4.9(@types/express@5.0.3)':
+    dependencies:
+      '@types/express': 5.0.3
 
   '@types/cors@2.8.19':
     dependencies:
@@ -3661,6 +3734,8 @@ snapshots:
     dependencies:
       consola: 3.4.2
 
+  clsx@2.1.1: {}
+
   color-convert@2.0.1:
     dependencies:
       color-name: 1.1.4
@@ -3684,6 +3759,13 @@ snapshots:
   content-type@1.0.5: {}
 
   convert-source-map@2.0.0: {}
+
+  cookie-parser@1.4.7:
+    dependencies:
+      cookie: 0.7.2
+      cookie-signature: 1.0.6
+
+  cookie-signature@1.0.6: {}
 
   cookie-signature@1.2.2: {}
 
@@ -3759,6 +3841,8 @@ snapshots:
   dotenv@16.0.3: {}
 
   dotenv@16.6.1: {}
+
+  dotenv@17.2.1: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -4907,6 +4991,12 @@ snapshots:
       react: 19.1.0
       set-cookie-parser: 2.7.1
     optionalDependencies:
+      react-dom: 19.1.0(react@19.1.0)
+
+  react-toastify@11.0.5(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      clsx: 2.1.1
+      react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
   react@19.1.0: {}

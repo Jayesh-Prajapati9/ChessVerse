@@ -31,6 +31,10 @@ export const useChessGame = () => {
 	const location = useLocation();
 	const [totalmove, setTotalMove] = useState<number>(0);
 	const { isDark, setIsDark, toggleTheme } = useTheme();
+	const [username1, setUserName1] = useState<string>();
+	const [username2, setUserName2] = useState<string>();
+	const [blackMoves, setBlackMoves] = useState<string[]|null>(['-']);
+	const [whiteMoves, setWhiteMoves] = useState<string[]|null>(['-']);
 
 	return {
 		// refs
@@ -78,5 +82,13 @@ export const useChessGame = () => {
 		location,
 		totalmove,
 		setTotalMove,
+		username1,
+		setUserName1,
+		username2,
+		setUserName2,
+		whiteMoves,
+		setWhiteMoves,
+		blackMoves,
+		setBlackMoves,
 	};
 };

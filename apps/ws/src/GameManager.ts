@@ -1,10 +1,12 @@
 import { Chess } from "chess.js";
 import { WebSocket, WebSocketServer } from "ws";
+import { getUserDetails } from "@repo/db";
 
 type GameClient = {
 	socket: WebSocket;
 	id: string;
 	mode: string;
+	username: string;
 };
 
 const games = new Map<
@@ -31,7 +33,6 @@ const waitingPlayers: Record<string, GameClient | null> = {
 export class GameManager {
 	clientId: string;
 	chess: Chess;
-
 	constructor() {
 		this.chess = new Chess();
 		this.clientId = crypto.randomUUID();
@@ -93,9 +94,15 @@ export class GameManager {
 		}
 	}
 
-	startGame(ws: WebSocket, mode: string) {
+	async startGame(ws: WebSocket, mode: string, userId: string) {
+		const username = await getUsername(userId);
 		console.log(`🎮 ${this.clientId} wants to start a game`);
-		const client: GameClient = { socket: ws, id: this.clientId, mode: mode };
+		const client: GameClient = {
+			socket: ws,
+			id: this.clientId,
+			mode: mode,
+			username,
+		};
 		tryMatchPlayers(client, mode, this);
 	}
 
@@ -164,6 +171,26 @@ export class GameManager {
 			this.chess.reset();
 			console.log("🏁 Game Over by", reason);
 		}
+	}
+
+	gameover(wss: WebSocketServer, ws: WebSocket, msg: any) {
+		const { roomId, reason, winner } = msg;
+		const game = games.get(roomId);
+		if (!game) return;
+
+		game.players.forEach((client) => {
+			if (client.readyState === ws.OPEN) {
+				client.send(
+					JSON.stringify({
+						type: "game_over",
+						reason,
+						winner,
+						fen: game.chess.fen(),
+					})
+				);
+				client.close(1000, "Game Over");
+			}
+		});
 	}
 
 	startTimer(roomId: string) {
@@ -262,13 +289,29 @@ const tryMatchPlayers = (
 			board: manager.chess.board(),
 			fen: manager.chess.fen(),
 		};
+		console.log(client.username);
+		console.log(opponent.username);
+		
 
-		opponent.socket.send(JSON.stringify({ ...gameState, color: "w" }));
-		client.socket.send(JSON.stringify({ ...gameState, color: "b" }));
+		opponent.socket.send(
+			JSON.stringify({ ...gameState, color: "w", username: client.username })
+		);
+		client.socket.send(
+			JSON.stringify({ ...gameState, color: "b", username: opponent.username })
+		);
 
 		console.log(`✅ GAME STARTED: ${client.id} vs ${opponent.id}`);
 	} else {
 		waitingPlayers[mode] = client;
 		console.log(`${client.id} is waiting for an opponent for ${mode} game`);
+	}
+};
+
+const getUsername = async (userId: string) => {
+	const response = await getUserDetails(userId, null, null);
+	if (response.success) {
+		return response.data.username;
+	} else {
+		return "--";
 	}
 };

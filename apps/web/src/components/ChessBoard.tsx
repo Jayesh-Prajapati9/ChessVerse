@@ -2,47 +2,56 @@ import { Chess, type Square } from "chess.js";
 import { useEffect } from "react";
 import { useChessGame } from "../hooks/useChessGame";
 import { showToast } from "@repo/ui/Toast";
+import axios from "axios";
+import { useUser } from "../hooks/useUser";
+type ChessBoardProps = ReturnType<typeof useChessGame>;
 
-export const ChessBoard = () => {
-	const {
-		socketRef,
-		chessRef,
-		selectedPiece,
-		setSelectedPiece,
-		validMove,
-		setValidMove,
-		board,
-		setBoard,
-		blackCaptured,
-		setBlackCaptured,
-		whiteCaptured,
-		setWhiteCaptured,
-		kingSquare,
-		setKingSquare,
-		canAttack,
-		setCanAttack,
-		roomId,
-		setRoomId,
-		gameStarted,
-		setGameStarted,
-		playerColor,
-		setPlayerColor,
-		setWhiteTimer,
-		setBlackTimer,
-		isCheckMate,
-		setIsCheckMate,
-		gameResult,
-		setGameResult,
-		setMode,
-		isSearchingGame,
-		setIsSearchingGame,
-		wsConnected,
-		setWsConnected,
-		isDark,
-		setIsDark,
-		location,
-		setTotalMove,
-	} = useChessGame();
+export const ChessBoard = ({
+	socketRef,
+	chessRef,
+	selectedPiece,
+	setSelectedPiece,
+	validMove,
+	setValidMove,
+	board,
+	setBoard,
+	blackCaptured,
+	setBlackCaptured,
+	whiteCaptured,
+	setWhiteCaptured,
+	kingSquare,
+	setKingSquare,
+	canAttack,
+	setCanAttack,
+	roomId,
+	setRoomId,
+	gameStarted,
+	setGameStarted,
+	playerColor,
+	setPlayerColor,
+	setWhiteTimer,
+	setBlackTimer,
+	isCheckMate,
+	setIsCheckMate,
+	gameResult,
+	setGameResult,
+	setMode,
+	isSearchingGame,
+	setIsSearchingGame,
+	wsConnected,
+	setWsConnected,
+	isDark,
+	setIsDark,
+	location,
+	setTotalMove,
+	setUserName1,
+	setUserName2,
+	username1,
+	whiteMoves,
+	blackMoves,
+	setWhiteMoves,
+	setBlackMoves,
+}: ChessBoardProps) => {
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
 	const primaryBg = "bg-[#4c4fef]";
@@ -54,6 +63,8 @@ export const ChessBoard = () => {
 	const darkSquare = isDark ? "bg-[#334155]" : "bg-[#b58863]";
 	const suggestion = isDark ? "bg-[#f1f5f9]" : "bg-green-500";
 	const text = isDark ? "text-white" : "text-[#18181b]";
+	const { user } = useUser();
+	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 	useEffect(() => {
 		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
@@ -66,16 +77,25 @@ export const ChessBoard = () => {
 		return () => {
 			socketRef.current?.close();
 		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
 		const attackedSquare: Square[] = [];
 		validMove?.map((x) => chessRef.current.get(x) && attackedSquare.push(x));
 		setCanAttack(attackedSquare);
-	}, [validMove, chessRef.current]);
+	}, [validMove, setCanAttack, chessRef]);
 
 	useEffect(() => {
-		wsConnected ? handleStartGame() : null;
+		if (location.state.mode === "ai") {
+			setIsSearchingGame(false);
+			setGameStarted(true);
+			setPlayerColor("w");
+			setBoard(chessRef.current.board());
+		} else {
+			if (wsConnected) handleStartGame();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [wsConnected]);
 
 	const initWebSocketConnection = () => {
@@ -86,18 +106,39 @@ export const ChessBoard = () => {
 			setWsConnected(true);
 		};
 
-		socketRef.current.onmessage = (event) => {
+		socketRef.current.onmessage = async (event) => {
 			const msg = JSON.parse(event.data.toString());
 
 			if (msg.type === "game_started") {
 				setIsSearchingGame(false);
 				console.log("TURN: ", chessRef.current.turn());
-
 				setRoomId(msg.roomId);
 				setPlayerColor(msg.color);
 				setGameStarted(true);
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
+				if (username1) {
+					setUserName2(msg.username);
+				} else {
+					setUserName1(msg.username);
+				}
+				try {
+					const response = await axios.post(`${BACKEND_URL}/game/create`, {
+						user1: user?.username,
+						user2: msg.username,
+						blackMoves,
+						whiteMoves,
+						mode: location.state.mode,
+						fen: chessRef.current.fen(),
+						winnerId: msg.winner,
+					});
+
+					if (response.status === 200) {
+						showToast("Game Created Succesfully", "success", isDark);
+					}
+				} catch (error) {
+					console.log(error);
+				}
 				console.log(`Game started as ${msg.color}`);
 				console.log("TURN 2 : ", chessRef.current.turn());
 			}
@@ -112,17 +153,23 @@ export const ChessBoard = () => {
 				console.log("MOVE TURN2: ", chessRef.current.turn());
 				// After the move check whether any player is under the check ? If Yes then indicate the that player
 
-				chessRef.current.turn() === "w"
-					? chessRef.current.inCheck()
-						? setKingSquare(
-								chessRef.current.findPiece({ type: "k", color: "w" })
-							)
-						: setKingSquare(null)
-					: chessRef.current.inCheck()
-						? setKingSquare(
-								chessRef.current.findPiece({ type: "k", color: "b" })
-							)
-						: setKingSquare(null);
+				if (chessRef.current.turn() === "w") {
+					if (chessRef.current.inCheck()) {
+						setKingSquare(
+							chessRef.current.findPiece({ type: "k", color: "w" })
+						);
+					} else {
+						setKingSquare(null);
+					}
+				} else {
+					if (chessRef.current.inCheck()) {
+						setKingSquare(
+							chessRef.current.findPiece({ type: "k", color: "b" })
+						);
+					} else {
+						setKingSquare(null);
+					}
+				}
 			}
 
 			if (msg.type === "game_over") {
@@ -133,6 +180,8 @@ export const ChessBoard = () => {
 				setBoard(chessRef.current.board());
 				setSelectedPiece(null);
 				setValidMove([]);
+
+				
 
 				socketRef.current?.close();
 				// Clear All the states
@@ -145,7 +194,7 @@ export const ChessBoard = () => {
 		};
 	};
 
-	const handleStartNewGame = () => {
+	const handleStartNewGame = async () => {
 		// After the first game is completed if the user want to start the new game
 		initWebSocketConnection();
 		setIsCheckMate(false);
@@ -162,8 +211,84 @@ export const ChessBoard = () => {
 		if (!socketRef.current) return;
 		setMode(location.state.mode);
 		socketRef.current?.send(
-			JSON.stringify({ type: "start_game", mode: location.state.mode })
+			JSON.stringify({
+				type: "start_game",
+				mode: location.state.mode,
+				userId: user?.id,
+			})
 		);
+	};
+
+	const getAImove = async () => {
+		const legalMoves = chessRef.current.moves();
+		const data = JSON.stringify({
+			contents: [
+				{
+					parts: [
+						{
+							text: `You are a chess engine. Given this position (FEN): "${chessRef.current.fen()}"
+							And legal moves: ${legalMoves.join(", ")}
+							Reply with the best move only. Use SAN (e.g., Nf3, d4) or UCI (e.g., e2e4) format. No explanation Send in single line.`,
+						},
+					],
+				},
+			],
+		});
+
+		const config = {
+			method: "post",
+			maxBodyLength: Infinity,
+			url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+			headers: {
+				"Content-Type": "application/json",
+				"X-goog-api-key": "AIzaSyCWLGEOwfublW4eOhKCrpsxI0-1lxrd7Rs",
+			},
+			data: data,
+		};
+
+		axios
+			.request(config)
+			.then((response) => {
+				if (
+					chessRef.current.move(
+						response.data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+					)
+				) {
+					chessRef.current.load(chessRef.current.fen());
+					setBoard(chessRef.current.board());
+					setSelectedPiece(null);
+					setValidMove([]);
+					setTotalMove((prev) => prev + 1);
+					if (chessRef.current.turn() === "w") {
+						if (chessRef.current.inCheck()) {
+							setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "w" })
+							);
+						} else {
+							setKingSquare(null);
+						}
+					} else {
+						if (chessRef.current.inCheck()) {
+							setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "b" })
+							);
+						} else {
+							setKingSquare(null);
+						}
+					}
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+
+		// const move = chessRef.current.move(response);
+		// if (move) {
+		// 	chessRef.current.load(chessRef.current.fen());
+		// 	setBoard(chessRef.current.board());
+		// 	setSelectedPiece(null);
+		// 	setValidMove([]);
+		// }
 	};
 
 	const handleMove = (square: Square) => {
@@ -204,9 +329,11 @@ export const ChessBoard = () => {
 
 			const capture = chessRef.current.get(square);
 			if (capture && validMove?.includes(square)) {
-				capture.color === "b"
-					? setWhiteCaptured([...(whiteCaptured ?? []), capture])
-					: setBlackCaptured([...(blackCaptured ?? []), capture]);
+				if (capture.color === "b") {
+					setWhiteCaptured([...(whiteCaptured ?? []), capture]);
+				} else {
+					setBlackCaptured([...(blackCaptured ?? []), capture]);
+				}
 			}
 
 			const moveResult = chessRef.current.move({
@@ -215,6 +342,31 @@ export const ChessBoard = () => {
 			});
 
 			if (moveResult) {
+				if (location.state.mode === "ai") {
+					chessRef.current.load(chessRef.current.fen());
+					setBoard(chessRef.current.board());
+					setSelectedPiece(null);
+					setValidMove([]);
+					setTotalMove((prev) => prev + 1);
+					if (chessRef.current.turn() === "w") {
+						if (chessRef.current.inCheck()) {
+							setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "w" })
+							);
+						} else {
+							setKingSquare(null);
+						}
+					} else {
+						if (chessRef.current.inCheck()) {
+							setKingSquare(
+								chessRef.current.findPiece({ type: "k", color: "b" })
+							);
+						} else {
+							setKingSquare(null);
+						}
+					}
+					getAImove();
+				}
 				console.log("send to ws");
 				socketRef.current?.send(
 					JSON.stringify({
@@ -225,6 +377,11 @@ export const ChessBoard = () => {
 						piece: piece,
 					})
 				);
+				if (chessRef.current.turn() === playerColor && playerColor === "w") {
+					setWhiteMoves([...(whiteMoves ?? []), square]);
+				} else {
+					setBlackMoves([...(blackMoves ?? []), square]);
+				}
 			}
 
 			setSelectedPiece(null);

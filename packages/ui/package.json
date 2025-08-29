@@ -6,6 +6,7 @@
     "./*": "./src/*.tsx"
   },
   "scripts": {
+    "build":"tsc -b",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
@@ -17,7 +18,9 @@
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
     "eslint": "^9.31.0",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "react-toastify": "^11.0.5"
+
   },
   "dependencies": {
     "react": "^19.1.0",

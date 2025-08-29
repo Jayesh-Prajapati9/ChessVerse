@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -23,8 +23,9 @@ export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 		});
 		return;
 	}
-
+	console.log(decoded);
+	
 	// can't load the types.d.ts
-	(req as any).userId = decoded.userId;
+	(req as any).userId = decoded.userId.data.id;
 	next();
 };
