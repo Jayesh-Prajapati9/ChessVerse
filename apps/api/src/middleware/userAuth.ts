@@ -23,9 +23,9 @@ export const userAuth = (req: Request, res: Response, next: NextFunction) => {
 		});
 		return;
 	}
-	console.log(decoded);
+	// console.log(decoded);
 	
 	// can't load the types.d.ts
-	(req as any).userId = decoded.userId.data.id;
+	(req as any).userId = decoded.userId;
 	next();
 };

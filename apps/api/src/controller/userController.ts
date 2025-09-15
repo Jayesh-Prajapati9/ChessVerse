@@ -145,8 +145,6 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const getStats = async (req: Request, res: Response) => {
 	const userId = (req as any).userId;
-	console.log("controller of getDetails -- ", userId);
-	console.log("controller end of getDetails -- ");
 	if (!userId) {
 		console.log("controller ", userId);
 		res.status(401).json({
@@ -156,7 +154,6 @@ export const getStats = async (req: Request, res: Response) => {
 	}
 
 	const userStats = await getUserDetails(userId, null, null);
-	console.log("userStats", userStats);
 
 	userStats.success
 		? res.status(200).json({
