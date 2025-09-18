@@ -74,7 +74,7 @@ export const SignIn = async (req: Request, res: Response) => {
 		res.status(404).json({ message: "Invalid Email or Password" });
 		return;
 	}
-	const userId = user;
+	const userId = user.data.id;
 
 	const token = jwt.sign({ userId }, JWT_SECRET);
 
