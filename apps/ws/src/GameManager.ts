@@ -1,13 +1,28 @@
 import { Chess } from "chess.js";
 import { WebSocket, WebSocketServer } from "ws";
 import { getUserDetails } from "@repo/db";
+import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 
 type GameClient = {
 	socket: WebSocket;
 	id: string;
 	mode: string;
 	username: string;
+	userId: string;
 };
+
+const users = new Map<number, {
+	whitePlayer: {
+		id: string;
+		moves: string[];
+	};
+	blackPlayer: {
+		id: string;
+		moves: string[];
+	};
+}>();
 
 const games = new Map<
 	string,
@@ -29,6 +44,8 @@ const waitingPlayers: Record<string, GameClient | null> = {
 	bullet: null,
 	normal: null,
 };
+
+const BACKEND_URL = process.env.BACKEND_URL || "";
 
 export class GameManager {
 	clientId: string;
@@ -102,14 +119,16 @@ export class GameManager {
 			id: this.clientId,
 			mode: mode,
 			username,
+			userId
 		};
 		tryMatchPlayers(client, mode, this);
 	}
 
-	move(wss: WebSocketServer, ws: WebSocket, msg: any) {
+	async move(wss: WebSocketServer, ws: WebSocket, msg: any) {
 		console.log("in move ");
 
-		const { roomId, from, to, piece } = msg;
+		const { roomId, from, to, gameId } = msg;
+
 		console.log("RoomId", roomId);
 
 		const game = games.get(roomId);
@@ -120,6 +139,13 @@ export class GameManager {
 
 		const move = game.chess.move({ from, to });
 		if (!move) return;
+
+		const user = users.get(gameId);
+		if (!user) {
+			console.error("Error whie finding the game from gameId..");
+			return;
+		}
+		move.color === 'w' ? user.whitePlayer.moves.push(move.lan) : user.blackPlayer.moves.push(move.lan);
 
 		// Broadcast move to all players
 		game.players.forEach((client) => {
@@ -150,6 +176,22 @@ export class GameManager {
 						? "black"
 						: "white"
 					: null;
+			
+			const user = users.get(gameId);
+
+			if (!user) {
+				console.error("Error whie finding the game from gameId..");
+				return;
+			}
+			const winnerId = winner ? winner === "white" ? user?.whitePlayer.id : user?.blackPlayer.id : null;
+
+			const response = await updateGame(gameId, user.blackPlayer.moves, user.whitePlayer.moves, game.chess.fen(), winnerId, roomId)
+			
+			if (!response.success || !response) {
+				sendError(roomId);
+				console.error("Game not updated...");
+				return;
+			}
 
 			clearInterval(game.timers?.intervalId!);
 
@@ -266,12 +308,56 @@ export class GameManager {
 		if (chess.isDraw()) return "draw";
 		if (chess.isStalemate()) return "stalemate";
 		if (chess.isThreefoldRepetition()) return "threefold repetition";
-		if (chess.isInsufficientMaterial()) return "insufficient material";
 		return "unknown";
+	}
+} // class completed
+
+const createGame = async (clientId: string, opponentId: string, mode: string, fen: string, roomId:string) => {
+	try {
+		const response = await axios.post(`${BACKEND_URL}/game/create`, {
+			user1: clientId,
+			user2: opponentId,
+			mode,
+			fen
+		});
+		if (response.data.status) {
+			console.log("Game Create");
+			return {
+				status: true,
+				gameId: response.data.gameId,
+				message: response.data.message,
+			}
+		} else {
+			console.error("Error while creating the game");
+			return {
+				status: false,
+				message: response.data.message
+			}
+		}
+	} catch (error) {
+		sendError(roomId);
+		console.error("Error while creating game...");
+		
 	}
 }
 
-const tryMatchPlayers = (
+const updateGame = async (gameId: number, blackMoves: string[], whiteMoves: string[], fen: string, winnerId: string | null, roomId:string) => {
+	try {
+		const response = await axios.patch	(`${BACKEND_URL}/game/update`, {
+			gameId,
+			blackMoves,
+			whiteMoves,
+			winnerId,
+			fen
+		})
+		return response.data;	
+	} catch (error) {
+		sendError(roomId);
+		console.error("Error while updating the game...",error);
+	}
+}
+
+const tryMatchPlayers = async (
 	client: GameClient,
 	mode: string,
 	manager: GameManager
@@ -292,14 +378,27 @@ const tryMatchPlayers = (
 		console.log(client.username);
 		console.log(opponent.username);
 		
+		const response = await createGame(
+			client.userId,
+			opponent.userId,
+			client.mode || opponent.mode,
+			gameState.fen,
+			roomId
+		);
+		if (!response || !response.status) {
+			sendError(roomId);
+			console.error("Error while creating the game");
+			return;
+		}
 
 		opponent.socket.send(
-			JSON.stringify({ ...gameState, color: "w", username: client.username })
+			JSON.stringify({ ...gameState, color: "w", username: client.username, gameId: response.gameId })
 		);
 		client.socket.send(
-			JSON.stringify({ ...gameState, color: "b", username: opponent.username })
+			JSON.stringify({ ...gameState, color: "b", username: opponent.username, gameId: response.gameId })
 		);
 
+		users.set(response.gameId, { whitePlayer: { id: client.userId, moves: [] }, blackPlayer: { id: opponent.userId, moves: [] } });
 		console.log(`✅ GAME STARTED: ${client.id} vs ${opponent.id}`);
 	} else {
 		waitingPlayers[mode] = client;
@@ -315,3 +414,21 @@ const getUsername = async (userId: string) => {
 		return "--";
 	}
 };
+
+const sendError = (roomId: string) => {
+	const game = games.get(roomId);
+	if (!game) {
+		console.error("Error not to client..");
+		return;
+	}
+	game.players.forEach((x) => {
+		if (x.readyState === WebSocket.OPEN) {
+			x.send(
+				JSON.stringify({
+					type: "error",
+					msg:"Error in connection or websockets...."
+				})
+			)
+		}
+	})
+}
