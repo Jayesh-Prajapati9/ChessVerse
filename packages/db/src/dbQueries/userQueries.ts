@@ -59,11 +59,24 @@ export const getUserDetails = async (
 			},
 		});
 		if (user) {
+			if (user.playerstats.length <= 0) {
+				const dummyData = {
+					userId: user.id,
+					rating: 0,
+					games_won: 0,
+					games_draw: 0,
+					games_played: 0,
+					win_streak: 0,
+					win_rate: 0,
+				};
+				user.playerstats.push(dummyData);
+				return { success: true, data: user };
+			}
 			return { success: true, data: user };
 		} else {
 			return {
 				success: false,
-				error: "No stats are available",
+				error: "Email or Password is incorrect",
 			};
 		}
 	} catch (error) {

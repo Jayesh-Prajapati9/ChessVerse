@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { ArrowLeft, Key } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const NotFound = () => {
 	const location = useLocation();
@@ -36,7 +36,7 @@ export const NotFound = () => {
 
 			{/* Lucide Icon Button */}
 			<Link
-				to="/"
+				to="/dashboard"
 				className="inline-flex items-center space-x-2 px-6 py-3 rounded-full text-lg font-semibold border-2 border-gray-600 text-gray-900 bg-[#c3c0c0] hover:bg-gray-800 hover:text-gray-300 hover:border-gray-500 transition-all duration-200"
 			>
 				<ArrowLeft className="w-5 h-5" />

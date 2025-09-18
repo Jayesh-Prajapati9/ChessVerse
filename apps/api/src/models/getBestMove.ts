@@ -1,6 +1,12 @@
-import { gemini_api_key, groq_api_key } from "../config";
 import { Chess } from "chess.js";
 import Groq from "groq-sdk";
+import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const gemini_api_key = process.env.gemini_api_key;
+const groq_api_key = process.env.groq_api_key;
 
 // export const getBestMove = async (fen: string) => {
 // 	const chess = new Chess(fen);
@@ -34,18 +40,17 @@ import Groq from "groq-sdk";
 // 	return bestMove;
 // };
 
-import { GoogleGenAI } from "@google/genai";
-
 export const getBestMove = async (fen: string) => {
+	console.log(gemini_api_key);
+	
 	const chess = new Chess(fen);
 	const legalMoves = chess.moves();
 
-const prompt = `
-You are a chess engine. Given this position (FEN): "${fen}"
-And legal moves: ${legalMoves.join(", ")}
-Reply with the best move only. Use SAN (e.g., Nf3, d4) or UCI (e.g., e2e4) format. No explanation Send in single line.
+	const prompt = `
+	You are a chess engine. Given this position (FEN): "${fen}"
+	And legal moves: ${legalMoves.join(", ")}
+	Reply with the best move only. Use SAN (e.g., Nf3, d4) or UCI (e.g., e2e4) format. No explanation Send in single line.
 `;
-
 
 	// The client gets the API key from the environment variable `GEMINI_API_KEY`.
 	const ai = new GoogleGenAI({ apiKey: gemini_api_key });

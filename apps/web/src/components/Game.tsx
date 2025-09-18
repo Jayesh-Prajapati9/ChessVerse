@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ChessBoard } from "./ChessBoard";
 import { useChessGame } from "../hooks/useChessGame";
 import type { Piece } from "chess.js";
+import { useUser } from "../hooks/useUser";
 
 function getPieces(type: string, color: string) {
 	const pieces: Record<string, [string, string]> = {
@@ -24,6 +25,7 @@ export const Game = () => {
 	const cardText = isDark ? "text-white" : "text-[#18181b]";
 	const accent = isDark ? "bg-[#27272a]" : "bg-[#e0e7ef]";
 	const border = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
+	const { user } = useUser();
 
 	const renderCapturedPieces = (pieces: Piece[] | null, title: string) => {
 		return (
@@ -160,14 +162,14 @@ export const Game = () => {
 												isDark ? "text-white" : "text-black"
 											}`}
 										>
-											Magnus2023
+											{game.username1?.toUpperCase()}
 										</p>
 										<p
 											className={`text-sm ${
 												isDark ? "text-gray-400" : "text-gray-600"
 											}`}
 										>
-											Rating: 1456
+											Rating: {user?.playerstats[0].rating}
 										</p>
 									</div>
 								</div>
@@ -178,8 +180,8 @@ export const Game = () => {
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
 											: isDark
-											? "bg-gray-800"
-											: "bg-gray-200"
+												? "bg-gray-800"
+												: "bg-gray-200"
 									}`}
 								>
 									<Clock className="h-5 w-5" />
@@ -191,10 +193,10 @@ export const Game = () => {
 										{game.playerColor !== "b"
 											? game.blackTimer
 												? game.blackTimer
-												: "0:00"
+												: "-:--"
 											: game.whiteTimer
-											? game.whiteTimer
-											: "0:00"}
+												? game.whiteTimer
+												: "-:--"}
 									</span>
 								</div>
 							</div>
@@ -205,7 +207,7 @@ export const Game = () => {
 							{/* Chess Board */}
 							<div className="relative my-6">
 								<div className="aspect-square w-full max-w-[90vw] sm:max-w-[670px] mx-auto border-4 border-gray-700 rounded-xl overflow-hidden">
-									<ChessBoard/>
+									<ChessBoard {...game} />
 								</div>
 							</div>
 
@@ -233,14 +235,14 @@ export const Game = () => {
 												isDark ? "text-white" : "text-black"
 											}`}
 										>
-											John Doe (You)
+											{user?.username.toUpperCase()}
 										</p>
 										<p
 											className={`text-sm ${
 												isDark ? "text-gray-400" : "text-gray-600"
 											}`}
 										>
-											Rating: 1247
+											Rating: {user?.playerstats[0].rating}
 										</p>
 									</div>
 								</div>
@@ -252,8 +254,8 @@ export const Game = () => {
 												? "bg-green-900 border border-green-700"
 												: "bg-green-100 border border-green-300"
 											: isDark
-											? "bg-gray-800"
-											: "bg-gray-200"
+												? "bg-gray-800"
+												: "bg-gray-200"
 									}`}
 								>
 									<Clock className="h-5 w-5" />
@@ -265,10 +267,10 @@ export const Game = () => {
 										{game.playerColor !== "w"
 											? game.blackTimer
 												? game.blackTimer
-												: "0:00"
+												: "-:--"
 											: game.whiteTimer
-											? game.whiteTimer
-											: "0:00"}
+												? game.whiteTimer
+												: "-:--"}
 									</span>
 								</div>
 							</div>
@@ -295,6 +297,19 @@ export const Game = () => {
 							</h3>
 							<div className="space-y-3">
 								<button
+									onClick={() => {
+										game.socketRef.current?.send(
+											JSON.stringify({
+												type: "game_over",
+												roomId: game.roomId,
+												reason: "Resign",
+												winner:
+													game.playerColor === game.chessRef.current.turn()
+														? "b"
+														: "w",
+											})
+										);
+									}}
 									className={`w-full py-3 rounded-lg font-semibold transition-all ${
 										isDark
 											? "bg-red-900 text-red-300 hover:bg-red-800 border border-red-700"
@@ -305,6 +320,19 @@ export const Game = () => {
 									Resign
 								</button>
 								<button
+									onClick={() => {
+										game.socketRef.current?.send(
+											JSON.stringify({
+												type: "game_over",
+												roomId: game.roomId,
+												reason: "Draw Offer",
+												winner:
+													game.playerColor === game.chessRef.current.turn()
+														? "b"
+														: "w",
+											})
+										);
+									}}
 									className={`w-full py-3 rounded-lg font-semibold transition-all ${
 										isDark
 											? "bg-yellow-900 text-yellow-300 hover:bg-yellow-800 border border-yellow-700"
@@ -343,7 +371,7 @@ export const Game = () => {
 											isDark ? "text-white" : "text-black"
 										}`}
 									>
-										{game.chessRef.current.turn() === game.playerColor
+										{game.playerColor === game.chessRef.current.turn()
 											? "Your turn"
 											: "Opponent's turn"}
 									</span>
@@ -373,7 +401,7 @@ export const Game = () => {
 											isDark ? "text-white" : "text-black"
 										}`}
 									>
-										Blitz 10+0
+										{game.location.state.mode.toUpperCase()}
 									</span>
 								</div>
 							</div>

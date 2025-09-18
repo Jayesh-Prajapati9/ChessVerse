@@ -70,11 +70,11 @@ export const SignIn = async (req: Request, res: Response) => {
 
 	const user = await getUserDetails(null, email, hashPassword);
 
-	if (typeof user === "string") {
+	if (!user.success) {
 		res.status(404).json({ message: "Invalid Email or Password" });
 		return;
 	}
-	const userId = user;
+	const userId = user.data.id;
 
 	const token = jwt.sign({ userId }, JWT_SECRET);
 
@@ -154,7 +154,6 @@ export const getStats = async (req: Request, res: Response) => {
 	}
 
 	const userStats = await getUserDetails(userId, null, null);
-	console.log("userStats", userStats);
 
 	userStats.success
 		? res.status(200).json({

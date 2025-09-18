@@ -69,13 +69,13 @@ export const Dashboard = () => {
 						<span className="text-2xl font-bold">ChessVerse</span>
 					</div>
 					<div className="flex items-center space-x-6">
-						<button
+						{/* <button
 							onClick={() => (window.location.href = "/history")}
 							className={`flex items-center space-x-2 px-4 py-2 ${secondary} ${secondaryText} rounded-lg transition-all hover:cursor-pointer transform hover:scale-105 `}
 						>
 							<History className="h-4 w-4" />
 							<span>History</span>
-						</button>
+						</button> */}
 						<button
 							onClick={toggleTheme}
 							className={`p-3 rounded-full transition-all transform hover:scale-110 ${card} ${cardText} hover:${accent} ${border} hover:cursor-pointer`}
@@ -262,7 +262,7 @@ export const Dashboard = () => {
 								</div>
 								<div className="flex justify-between items-center px-3">
 									<span className={mutedText}>Avg Accuracy</span>
-									<span className="font-bold">84%</span>
+									<span className="font-bold">-</span>
 								</div>
 							</div>
 						</div>

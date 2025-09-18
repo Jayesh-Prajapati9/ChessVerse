@@ -13,13 +13,17 @@ wss.on("connection", (ws) => {
 		if (msg.type === "start_game") {
 			console.log("game started");
 			
-			gamemanager.startGame(ws,msg.mode);
+			gamemanager.startGame(ws,msg.mode,msg.userId);
 		}
 
 		if (msg.type === "move") {
 			console.log("move init");
 			
 			gamemanager.move(wss, ws, msg);
+		}
+
+		if (msg.type === 'game_over') {
+			gamemanager.gameover(wss,ws,msg);
 		}
 	});
 
