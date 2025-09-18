@@ -44,13 +44,11 @@ export const ChessBoard = ({
 	setIsDark,
 	location,
 	setTotalMove,
-	setUserName1,
-	setUserName2,
-	username1,
-	whiteMoves,
-	blackMoves,
-	setWhiteMoves,
-	setBlackMoves,
+	setOpponent,
+	setGameId,
+	gameId,
+	setIsWsError,
+	isWsError,
 }: ChessBoardProps) => {
 	const card = isDark ? "bg-[#232326]" : "bg-white";
 	const cardBorder = isDark ? "border-[#27272a]" : "border-[#e5e7eb]";
@@ -64,7 +62,8 @@ export const ChessBoard = ({
 	const suggestion = isDark ? "bg-[#f1f5f9]" : "bg-green-500";
 	const text = isDark ? "text-white" : "text-[#18181b]";
 	const { user } = useUser();
-	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+	const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
+
 
 	useEffect(() => {
 		// Here the websocket is bind for the first time and therefore all the message can be viewed and processed
@@ -117,28 +116,11 @@ export const ChessBoard = ({
 				setGameStarted(true);
 				chessRef.current.load(msg.fen);
 				setBoard(chessRef.current.board());
-				if (username1) {
-					setUserName2(msg.username);
-				} else {
-					setUserName1(msg.username);
+				if (user?.username !== msg.username) {
+					setOpponent(msg.username);
 				}
-				try {
-					const response = await axios.post(`${BACKEND_URL}/game/create`, {
-						user1: user?.username,
-						user2: msg.username,
-						blackMoves,
-						whiteMoves,
-						mode: location.state.mode,
-						fen: chessRef.current.fen(),
-						winnerId: msg.winner,
-					});
-
-					if (response.status === 200) {
-						showToast("Game Created Succesfully", "success", isDark);
-					}
-				} catch (error) {
-					console.log(error);
-				}
+				showToast("Game Started", "success", isDark);
+				setGameId(msg.gameId);
 				console.log(`Game started as ${msg.color}`);
 				console.log("TURN 2 : ", chessRef.current.turn());
 			}
@@ -180,9 +162,6 @@ export const ChessBoard = ({
 				setBoard(chessRef.current.board());
 				setSelectedPiece(null);
 				setValidMove([]);
-
-				
-
 				socketRef.current?.close();
 				// Clear All the states
 			}
@@ -190,6 +169,10 @@ export const ChessBoard = ({
 			if (msg.type === "timer_update") {
 				setWhiteTimer(msg.white);
 				setBlackTimer(msg.black);
+			}
+
+			if (msg.type === "error") {
+				setIsWsError(msg.msg);
 			}
 		};
 	};
@@ -241,7 +224,7 @@ export const ChessBoard = ({
 			url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
 			headers: {
 				"Content-Type": "application/json",
-				"X-goog-api-key": "AIzaSyCWLGEOwfublW4eOhKCrpsxI0-1lxrd7Rs",
+				"X-goog-api-key": GEMINI_API_KEY,
 			},
 			data: data,
 		};
@@ -282,13 +265,6 @@ export const ChessBoard = ({
 				console.log(error);
 			});
 
-		// const move = chessRef.current.move(response);
-		// if (move) {
-		// 	chessRef.current.load(chessRef.current.fen());
-		// 	setBoard(chessRef.current.board());
-		// 	setSelectedPiece(null);
-		// 	setValidMove([]);
-		// }
 	};
 
 	const handleMove = (square: Square) => {
@@ -375,13 +351,9 @@ export const ChessBoard = ({
 						from: selectedPiece,
 						to: square,
 						piece: piece,
+						gameId
 					})
 				);
-				if (chessRef.current.turn() === playerColor && playerColor === "w") {
-					setWhiteMoves([...(whiteMoves ?? []), square]);
-				} else {
-					setBlackMoves([...(blackMoves ?? []), square]);
-				}
 			}
 
 			setSelectedPiece(null);
@@ -528,6 +500,42 @@ export const ChessBoard = ({
 								<button
 									onClick={() => handleStartNewGame()}
 									className={`hover:opacity-80 px-6 py-2 rounded-lg transition-colors cursor-pointer ${primaryBg} ${primaryFg} transition-all transform hover:scale-110`}
+								>
+									Play again
+								</button>
+
+								<button
+									onClick={() => {
+										window.location.href = "/dashboard";
+									}}
+									className={`${secondary} ${secondaryText} hover:opacity-80 px-6 py-2 rounded-lg cursor-pointer transition-all transform hover:scale-110`}
+								>
+									Home
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{isWsError && (
+				<div
+					className={`fixed inset-0 ${isDark ? "bg-black/50" : "bg-white/70"
+						} flex items-center justify-center z-50 select-none`}
+				>
+					<div
+						className={`${isDark ? "bg-black/70" : "bg-white/70"} rounded-xl p-5 ${cardBorder} border max-w-md w-full mx-4`}
+					>
+						<div className="text-center">
+							<h3 className={`text-3xl font-bold mb-2 text-[#DC2626]`}>Error</h3>
+							<p className={`text-xl font-semibold mt-5 text-[#b90101] mb-10`}>
+								{isWsError}
+							</p>
+
+							<div className="flex justify-around items-center">
+								<button
+									onClick={() => handleStartNewGame()}
+									className={`hover:opacity-80 px-6 py-2 rounded-lg cursor-pointer ${secondary} ${primaryFg} transition-all transform hover:scale-110`}
 								>
 									Play again
 								</button>
