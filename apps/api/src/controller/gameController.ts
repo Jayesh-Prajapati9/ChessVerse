@@ -72,6 +72,7 @@ export const modifyGame = async (req: Request, res: Response) => {
 
   if (!updated.success) {
     res.status(404).json({
+      success:false,
       message: updated.message,
     });
     return;
@@ -80,6 +81,7 @@ export const modifyGame = async (req: Request, res: Response) => {
   console.log("Game updated");
 
   res.status(200).json({
+    success:true,
     message: updated.message,
   });
 };
